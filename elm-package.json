@@ -6,8 +6,8 @@
     "source-directories": [
         "src"
     ],
-   "native-modules": true,
     "exposed-modules": [],
+    "native-modules": true,
     "dependencies": {
         "eeue56/elm-html-in-elm": "1.0.1 <= v < 2.0.0",
         "elm-community/elm-test": "3.0.0 <= v < 4.0.0",
