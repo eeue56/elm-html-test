@@ -1,7 +1,7 @@
 module Test.Html.Query exposing (Single, Multiple, find, findAll, children, descendants, count)
 
 import Html exposing (Html)
-import Test.Html.Query.Criteria as Criteria exposing (Criteria)
+import Test.Html.Query.Selector.Internal as Selector exposing (Selector)
 import Test.Html.Query.Internal as Internal
 import Html.Inert as Inert
 import Expect exposing (Expectation)
@@ -19,16 +19,16 @@ type alias Multiple =
 -- STARTERS --
 
 
-find : List Criteria -> Html msg -> Single
-find criteria html =
-    Internal.Find criteria
+find : List Selector -> Html msg -> Single
+find selectors html =
+    Internal.Find selectors
         |> Internal.Query (Inert.fromHtml html) []
         |> Internal.Single
 
 
-findAll : List Criteria -> Html msg -> Multiple
-findAll criteria html =
-    Internal.FindAll criteria
+findAll : List Selector -> Html msg -> Multiple
+findAll selectors html =
+    Internal.FindAll selectors
         |> Internal.Query (Inert.fromHtml html) []
         |> Internal.Multiple
 
@@ -37,16 +37,16 @@ findAll criteria html =
 -- SELECTORS --
 
 
-children : List Criteria -> Single -> Multiple
-children criteria (Internal.Single query) =
-    Internal.Children criteria
+children : List Selector -> Single -> Multiple
+children selectors (Internal.Single query) =
+    Internal.Children selectors
         |> Internal.prependSelector query
         |> Internal.Multiple
 
 
-descendants : List Criteria -> Single -> Multiple
-descendants criteria (Internal.Single query) =
-    Internal.Descendants criteria
+descendants : List Selector -> Single -> Multiple
+descendants selectors (Internal.Single query) =
+    Internal.Descendants selectors
         |> Internal.prependSelector query
         |> Internal.Multiple
 

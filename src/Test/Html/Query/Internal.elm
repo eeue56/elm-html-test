@@ -1,6 +1,6 @@
 module Test.Html.Query.Internal exposing (..)
 
-import Test.Html.Query.Criteria as Criteria exposing (Criteria)
+import Test.Html.Query.Selector.Internal as InternalSelector exposing (Selector, selectorToString)
 import Html.Inert as Inert exposing (Node)
 import ElmHtml.InternalTypes exposing (ElmHtml)
 import ElmHtml.Query
@@ -9,17 +9,17 @@ import ElmHtml.Query
 {-| Note: the selectors are stored in reverse order for better prepending perf.
 -}
 type Query
-    = Query Inert.Node (List Selector) Starter
+    = Query Inert.Node (List SelectorQuery) StarterQuery
 
 
-type Starter
-    = Find (List Criteria)
-    | FindAll (List Criteria)
+type StarterQuery
+    = Find (List Selector)
+    | FindAll (List Selector)
 
 
-type Selector
-    = Descendants (List Criteria)
-    | Children (List Criteria)
+type SelectorQuery
+    = Descendants (List Selector)
+    | Children (List Selector)
 
 
 type Single
@@ -35,26 +35,26 @@ toLines (Query node selectors starter) =
     let
         starterStr =
             case starter of
-                Find criteria ->
-                    "Query.find " ++ joinAsList Criteria.toString criteria
+                Find selector ->
+                    "Query.find " ++ joinAsList selectorToString selector
 
-                FindAll criteria ->
-                    "Query.findAll " ++ joinAsList Criteria.toString criteria
+                FindAll selector ->
+                    "Query.findAll " ++ joinAsList selectorToString selector
 
         selectorStr =
-            List.map (selectorToString node) selectors
+            List.map (selectorQueryToString node) selectors
     in
         starterStr :: selectorStr
 
 
-selectorToString : Node -> Selector -> String
-selectorToString node selector =
-    case selector of
-        Descendants criteria ->
-            "Query.descendants " ++ joinAsList Criteria.toString criteria
+selectorQueryToString : Node -> SelectorQuery -> String
+selectorQueryToString node selectorQuery =
+    case selectorQuery of
+        Descendants selectors ->
+            "Query.descendants " ++ joinAsList selectorToString selectors
 
-        Children criteria ->
-            "Query.children " ++ joinAsList Criteria.toString criteria
+        Children selectors ->
+            "Query.children " ++ joinAsList selectorToString selectors
 
 
 joinAsList : (a -> String) -> List a -> String
@@ -65,7 +65,7 @@ joinAsList toStr list =
         "[ " ++ String.join ", " (List.map toStr list) ++ " ]"
 
 
-prependSelector : Query -> Selector -> Query
+prependSelector : Query -> SelectorQuery -> Query
 prependSelector (Query node selectors starter) selector =
     Query node (selector :: selectors) starter
 
@@ -80,4 +80,9 @@ traverse (Query node selectors starter) =
         elmHtml =
             Inert.toElmHtml node
     in
-        []
+        case starter of
+            Find selector ->
+                []
+
+            FindAll selector ->
+                []
