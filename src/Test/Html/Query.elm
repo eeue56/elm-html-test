@@ -42,7 +42,7 @@ children criteria (Internal.Single query) =
         |> Internal.Multiple
 
 
-descendants : Criteria -> Single -> Multiple
+descendants : List Criteria -> Single -> Multiple
 descendants criteria (Internal.Single query) =
     Internal.Descendants criteria
         |> Internal.Selector query

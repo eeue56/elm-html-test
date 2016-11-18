@@ -11,7 +11,7 @@ type Query
 
 
 type Selector
-    = Descendants Criteria
+    = Descendants (List Criteria)
     | Children (List Criteria)
 
 
