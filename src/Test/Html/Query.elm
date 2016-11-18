@@ -21,13 +21,15 @@ type alias Multiple =
 
 find : List Criteria -> Html msg -> Single
 find criteria html =
-    Internal.Find (Inert.fromHtml html) criteria
+    Internal.Find criteria
+        |> Internal.Query (Inert.fromHtml html) []
         |> Internal.Single
 
 
 findAll : List Criteria -> Html msg -> Multiple
 findAll criteria html =
-    Internal.FindAll (Inert.fromHtml html) criteria
+    Internal.FindAll criteria
+        |> Internal.Query (Inert.fromHtml html) []
         |> Internal.Multiple
 
 
@@ -38,14 +40,14 @@ findAll criteria html =
 children : List Criteria -> Single -> Multiple
 children criteria (Internal.Single query) =
     Internal.Children criteria
-        |> Internal.Selector query
+        |> Internal.prependSelector query
         |> Internal.Multiple
 
 
 descendants : List Criteria -> Single -> Multiple
 descendants criteria (Internal.Single query) =
     Internal.Descendants criteria
-        |> Internal.Selector query
+        |> Internal.prependSelector query
         |> Internal.Multiple
 
 
@@ -57,16 +59,24 @@ count : (Int -> Expectation) -> Multiple -> Expectation
 count expect (Internal.Multiple query) =
     -- TODO make this work instead of hardcoding it to 5
     expect 5
-        |> failWithQuery "▼ Query.count" query
+        |> failWithQuery "Query.count" query
 
 
 failWithQuery : String -> Internal.Query -> Expectation -> Expectation
 failWithQuery queryName query expectation =
     case Expect.getFailure expectation of
         Just { given, message } ->
-            [ Internal.queryToString query, queryName, message ]
+            (queryName :: Internal.toLines query)
+                |> List.reverse
+                |> List.map prefixOutputLine
                 |> String.join "\n\n"
+                |> (\str -> str ++ "\n\n\n" ++ message)
                 |> Expect.fail
 
         Nothing ->
             expectation
+
+
+prefixOutputLine : String -> String
+prefixOutputLine =
+    (++) "▼ "
