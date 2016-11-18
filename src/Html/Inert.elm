@@ -1,14 +1,17 @@
-module Html.Inert exposing (Node, fromHtml, empty)
+module Html.Inert exposing (Node, fromHtml, toElmHtml)
 
 {-| Inert Html - that is, can't do anything with events.
 -}
 
 import Html exposing (Html)
+import Native.HtmlAsJson
+import Json.Decode
+import Html exposing (Html)
+import ElmHtml.InternalTypes exposing (decodeElmHtml, ElmHtml)
 
 
 type Node
     = Node (Html Never)
-    | EmptyNode
 
 
 fromHtml : Html msg -> Node
@@ -18,9 +21,19 @@ fromHtml html =
         |> Node
 
 
-empty : Node
-empty =
-    EmptyNode
+toJson : Html a -> String
+toJson =
+    Native.HtmlAsJson.toJson
+
+
+toElmHtml : Node -> ElmHtml
+toElmHtml (Node html) =
+    case Json.Decode.decodeString decodeElmHtml (toJson html) of
+        Ok elmHtml ->
+            elmHtml
+
+        Err str ->
+            Debug.crash ("Error internally processing HTML for testing - please report this error message as a bug: " ++ str)
 
 
 impossibleMessage : String

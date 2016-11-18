@@ -57,8 +57,10 @@ descendants criteria (Internal.Single query) =
 
 count : (Int -> Expectation) -> Multiple -> Expectation
 count expect (Internal.Multiple query) =
-    -- TODO make this work instead of hardcoding it to 5
-    expect 5
+    query
+        |> Internal.traverse
+        |> List.length
+        |> expect
         |> failWithQuery "Query.count" query
 
 
