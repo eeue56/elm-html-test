@@ -63,7 +63,10 @@ selectorToString node selector =
 
 joinAsList : (a -> String) -> List a -> String
 joinAsList toStr list =
-    "[ " ++ String.join ", " (List.map toStr list) ++ " ]"
+    if List.isEmpty list then
+        "[]"
+    else
+        "[ " ++ String.join ", " (List.map toStr list) ++ " ]"
 
 
 prepareQuery : Query -> ( Node, List Query )
