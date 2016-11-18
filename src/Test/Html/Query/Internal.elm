@@ -25,10 +25,13 @@ type Multiple
 
 queryToString : Query -> String
 queryToString query =
-    query
-        |> queryToList
-        |> List.foldl queryToStringHelp ( Inert.empty, "" )
-        |> Tuple.second
+    let
+        ( node, queries ) =
+            prepareQuery query
+    in
+        queries
+            |> List.foldl queryToStringHelp ( node, "" )
+            |> Tuple.second
 
 
 queryToStringHelp : Query -> ( Node, String ) -> ( Node, String )
@@ -60,29 +63,40 @@ selectorToString node selector =
             "children"
 
 
-singleToList : Single -> List Query
-singleToList (Single query) =
-    queryToList query
+prepareSingle : Single -> ( Node, List Query )
+prepareSingle (Single query) =
+    prepareQuery query
 
 
-multipleToList : Multiple -> List Query
-multipleToList (Multiple query) =
-    queryToList query
+prepareMultiple : Multiple -> ( Node, List Query )
+prepareMultiple (Multiple query) =
+    prepareQuery query
 
 
-queryToList : Query -> List Query
-queryToList =
-    queryToListHelp []
+prepareQuery : Query -> ( Node, List Query )
+prepareQuery query =
+    case prepareQueryHelp ( Nothing, [] ) query of
+        ( Just node, result ) ->
+            ( node, result )
+
+        ( Nothing, _ ) ->
+            Debug.crash "Unable to prepare query. Ended up with a query that was never given Html. This should never happen! Please report this as a bug."
 
 
-queryToListHelp : List Query -> Query -> List Query
-queryToListHelp result current =
-    case current of
-        Find _ _ ->
-            current :: result
+prepareQueryHelp : ( Maybe Node, List Query ) -> Query -> ( Maybe Node, List Query )
+prepareQueryHelp ( maybeNode, queries ) query =
+    case query of
+        Find node _ ->
+            if maybeNode == Nothing then
+                ( Just node, query :: queries )
+            else
+                Debug.crash "Unable to prepare query. Ended up with a query that was given Html *twice*. This should never happen! Please report this as a bug."
 
-        FindAll _ _ ->
-            current :: result
+        FindAll node _ ->
+            if maybeNode == Nothing then
+                ( Just node, query :: queries )
+            else
+                Debug.crash "Unable to prepare query. Ended up with a query that was given Html *twice*. This should never happen! Please report this as a bug."
 
-        Selector query _ ->
-            queryToListHelp (current :: result) query
+        Selector parentQuery _ ->
+            prepareQueryHelp ( maybeNode, query :: queries ) parentQuery
