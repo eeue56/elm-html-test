@@ -63,16 +63,6 @@ selectorToString node selector =
             "children"
 
 
-prepareSingle : Single -> ( Node, List Query )
-prepareSingle (Single query) =
-    prepareQuery query
-
-
-prepareMultiple : Multiple -> ( Node, List Query )
-prepareMultiple (Multiple query) =
-    prepareQuery query
-
-
 prepareQuery : Query -> ( Node, List Query )
 prepareQuery query =
     case prepareQueryHelp ( Nothing, [] ) query of
