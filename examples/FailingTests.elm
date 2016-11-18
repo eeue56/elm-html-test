@@ -23,7 +23,7 @@ port emit : ( String, Value ) -> Cmd msg
 testText : Test
 testText =
     describe "working with HTML text"
-        [ test "(this should fail) header has four links in it" <|
+        [ test "(this should fail) expect header to have 4 links in it, even though it has 3" <|
             \() ->
                 view exampleModel
                     |> Query.find [ id "heading" ]
