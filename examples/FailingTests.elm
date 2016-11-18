@@ -5,6 +5,7 @@ import Expect
 import Test exposing (..)
 import Json.Encode exposing (Value)
 import Html exposing (..)
+import Html.Attributes as Attr
 import Test.Html.Query as Query
 import Test.Html.Query.Criteria exposing (..)
 
@@ -29,19 +30,32 @@ model =
     ()
 
 
-view : Model -> Html ()
+view : Model -> Html msg
 view model =
-    text "blahh"
+    div [ Attr.class "container" ]
+        [ header [ Attr.class "funky themed", Attr.id "heading" ]
+            [ a [ Attr.href "example.com" ] [ text "Home" ]
+            , a [ Attr.href "example.com/about" ] [ text "About" ]
+            ]
+        , section [ Attr.class "funky themed", Attr.id "section" ]
+            [ ul [ Attr.class "some-list" ]
+                [ li [ Attr.class "list-item themed" ] [ text "first item" ]
+                , li [ Attr.class "list-item themed" ] [ text "second item" ]
+                , li [ Attr.class "list-item themed selected" ] [ text "third item" ]
+                , li [ Attr.class "list-item themed" ] [ text "fourth item" ]
+                ]
+            ]
+        ]
 
 
 testText : Test
 testText =
     describe "working with HTML text"
-        [ test "this should fail" <|
+        [ test "(this should fail) header has four links in it" <|
             \() ->
                 model
                     |> view
-                    |> Query.find [ class "foo" ]
-                    |> Query.children
+                    |> Query.find [ id "heading" ]
+                    |> Query.children [ tag "a" ]
                     |> Query.count (Expect.equal 4)
         ]
