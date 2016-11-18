@@ -52,6 +52,7 @@ selectorToString : Node -> Selector -> String
 selectorToString node selector =
     case selector of
         Descendants criteria ->
+            -- TODO add details
             "descendants"
 
         Children criteria ->
