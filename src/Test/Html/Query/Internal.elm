@@ -4,6 +4,8 @@ import Test.Html.Query.Criteria as Criteria exposing (Criteria)
 import Html.Inert as Inert exposing (Node)
 
 
+{-| Note: the selectors are stored in reverse order for better prepending perf.
+-}
 type Query
     = Query Inert.Node (List Selector) Starter
 
