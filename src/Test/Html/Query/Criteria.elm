@@ -1,4 +1,4 @@
-module Test.Html.Query.Criteria exposing (Criteria, toString, all, classes, id, attr, class)
+module Test.Html.Query.Criteria exposing (Criteria, toString, all, classes, id, attr, class, tag)
 
 import Basics
 
@@ -7,6 +7,7 @@ type Criteria
     = All (List Criteria)
     | Classes (List String)
     | Attribute { name : String, value : String, asString : String }
+    | Tag { name : String, asString : String }
 
 
 toString : Criteria -> String
@@ -23,6 +24,9 @@ toString criteria =
         Attribute { asString } ->
             asString
 
+        Tag { asString } ->
+            asString
+
 
 all : List Criteria -> Criteria
 all =
@@ -37,6 +41,14 @@ classes =
 id : String -> Criteria
 id =
     namedAttr "id"
+
+
+tag : String -> Criteria
+tag name =
+    Tag
+        { name = name
+        , asString = "tag " ++ Basics.toString name ++ " "
+        }
 
 
 class : String -> Criteria
