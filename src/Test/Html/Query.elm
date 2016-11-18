@@ -57,14 +57,15 @@ count : (Int -> Expectation) -> Multiple -> Expectation
 count expect (Internal.Multiple query) =
     -- TODO make this work instead of hardcoding it to 5
     expect 5
-        |> failWithQuery query
+        |> failWithQuery "▼ Query.count" query
 
 
-failWithQuery : Internal.Query -> Expectation -> Expectation
-failWithQuery query expectation =
+failWithQuery : String -> Internal.Query -> Expectation -> Expectation
+failWithQuery queryName query expectation =
     case Expect.getFailure expectation of
         Just { given, message } ->
-            (Internal.queryToString query ++ "\n\n" ++ message)
+            [ Internal.queryToString query, queryName, message ]
+                |> String.join "\n\n"
                 |> Expect.fail
 
         Nothing ->

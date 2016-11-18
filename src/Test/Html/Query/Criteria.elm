@@ -47,7 +47,7 @@ tag : String -> Criteria
 tag name =
     Tag
         { name = name
-        , asString = "tag " ++ Basics.toString name ++ " "
+        , asString = "tag " ++ Basics.toString name
         }
 
 

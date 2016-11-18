@@ -40,10 +40,10 @@ queryToStringHelp query ( node, result ) =
         ( newNode, newStr ) =
             case query of
                 Find rootNode criteria ->
-                    ( rootNode, "find [ " ++ String.join ", " (List.map Criteria.toString criteria) ++ " ]" )
+                    ( rootNode, "▼ Query.find " ++ joinAsList Criteria.toString criteria )
 
                 FindAll rootNode criteria ->
-                    ( rootNode, "findAll [ " ++ String.join " " (List.map Criteria.toString criteria) ++ " ]" )
+                    ( rootNode, "▼ Query.findAll [ " ++ joinAsList Criteria.toString criteria )
 
                 Selector _ selector ->
                     ( node, selectorToString node selector )
@@ -55,12 +55,15 @@ selectorToString : Node -> Selector -> String
 selectorToString node selector =
     case selector of
         Descendants criteria ->
-            -- TODO add details
-            "descendants"
+            "▼ Query.descendants " ++ joinAsList Criteria.toString criteria
 
         Children criteria ->
-            -- TODO add details
-            "children"
+            "▼ Query.children " ++ joinAsList Criteria.toString criteria
+
+
+joinAsList : (a -> String) -> List a -> String
+joinAsList toStr list =
+    "[ " ++ String.join ", " (List.map toStr list) ++ " ]"
 
 
 prepareQuery : Query -> ( Node, List Query )
