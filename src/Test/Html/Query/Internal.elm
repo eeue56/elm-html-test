@@ -12,7 +12,7 @@ type Query
 
 type Selector
     = Descendants Criteria
-    | Children
+    | Children (List Criteria)
 
 
 type Single
@@ -54,7 +54,8 @@ selectorToString node selector =
         Descendants criteria ->
             "descendants"
 
-        Children ->
+        Children criteria ->
+            -- TODO add details
             "children"
 
 

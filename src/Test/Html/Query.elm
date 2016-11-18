@@ -35,9 +35,9 @@ findAll criteria html =
 -- SELECTORS --
 
 
-children : Single -> Multiple
-children (Internal.Single query) =
-    Internal.Children
+children : List Criteria -> Single -> Multiple
+children criteria (Internal.Single query) =
+    Internal.Children criteria
         |> Internal.Selector query
         |> Internal.Multiple
 
