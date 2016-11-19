@@ -65,8 +65,7 @@ failWithQuery : String -> Internal.Query -> Expectation -> Expectation
 failWithQuery queryName query expectation =
     case Expect.getFailure expectation of
         Just { given, message } ->
-            (queryName :: Internal.toLines query)
-                |> List.reverse
+            (Internal.toLines query ++ [ queryName ])
                 |> List.map prefixOutputLine
                 |> String.join "\n\n"
                 |> (\str -> str ++ "\n\n\n" ++ message)
