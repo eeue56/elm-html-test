@@ -32,12 +32,12 @@ testText =
             \() ->
                 view exampleModel
                     |> Query.find [ tag "ul" ]
-                    |> Query.children [ tag "li" ]
+                    |> Query.descendants [ tag "li" ]
                     |> Query.count (Expect.equal 4)
         , test "(this should fail) expect header to have 4 links in it, even though it has 3" <|
             \() ->
                 view exampleModel
                     |> Query.find [ id "heading" ]
-                    |> Query.children [ tag "a" ]
+                    |> Query.descendants [ tag "a" ]
                     |> Query.count (Expect.equal 4)
         ]

@@ -1,4 +1,4 @@
-module Test.Html.Query exposing (Single, Multiple, find, findAll, children, descendants, count)
+module Test.Html.Query exposing (Single, Multiple, find, findAll, descendants, count)
 
 import Html exposing (Html)
 import Test.Html.Query.Selector.Internal as Selector exposing (Selector)
@@ -35,13 +35,6 @@ findAll selectors html =
 
 
 -- SELECTORS --
-
-
-children : List Selector -> Single -> Multiple
-children selectors (Internal.Single query) =
-    Internal.Children selectors
-        |> Internal.prependSelector query
-        |> Internal.Multiple
 
 
 descendants : List Selector -> Single -> Multiple

@@ -20,7 +20,6 @@ type StarterQuery
 
 type SelectorQuery
     = Descendants (List Selector)
-    | Children (List Selector)
 
 
 type Single
