@@ -3,6 +3,7 @@ module Test.Html.Query.Internal exposing (..)
 import Test.Html.Query.Selector.Internal as InternalSelector exposing (Selector, selectorToString)
 import Html.Inert as Inert exposing (Node)
 import ElmHtml.InternalTypes exposing (ElmHtml)
+import ElmHtml.ToString exposing (nodeTypeToString)
 import Expect exposing (Expectation)
 
 
@@ -41,10 +42,12 @@ toLines (Query node selectors starter) =
         starterStr =
             case starter of
                 Find selector ->
-                    "Query.find " ++ joinAsList selectorToString selector
+                    ("Query.find " ++ joinAsList selectorToString selector)
+                        |> addHtmlContext node
 
                 FindAll selector ->
-                    "Query.findAll " ++ joinAsList selectorToString selector
+                    ("Query.findAll " ++ joinAsList selectorToString selector)
+                        |> addHtmlContext node
 
         selectorStr =
             List.map (selectorQueryToString node) selectors
@@ -52,14 +55,26 @@ toLines (Query node selectors starter) =
         starterStr :: selectorStr
 
 
+toHtmlString : Query -> String
+toHtmlString (Query node selectors starter) =
+    nodeTypeToString (Inert.toElmHtml node)
+
+
 selectorQueryToString : Node -> SelectorQuery -> String
 selectorQueryToString node selectorQuery =
     case selectorQuery of
         Descendants selectors ->
-            "Query.descendants " ++ joinAsList selectorToString selectors
+            ("Query.descendants " ++ joinAsList selectorToString selectors)
+                |> addHtmlContext node
 
         Children selectors ->
-            "Query.children " ++ joinAsList selectorToString selectors
+            ("Query.children " ++ joinAsList selectorToString selectors)
+                |> addHtmlContext node
+
+
+addHtmlContext : Node -> String -> String
+addHtmlContext node str =
+    String.join "\n\n" [ str, nodeTypeToString (Inert.toElmHtml node) ]
 
 
 joinAsList : (a -> String) -> List a -> String

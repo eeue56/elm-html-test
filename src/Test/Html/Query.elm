@@ -67,6 +67,7 @@ failWithQuery queryName query expectation =
         Just { given, message } ->
             (Internal.toLines query ++ [ queryName ])
                 |> List.map prefixOutputLine
+                |> ((::) (Internal.toHtmlString query))
                 |> String.join "\n\n"
                 |> (\str -> str ++ "\n\n\n" ++ message)
                 |> Expect.fail
