@@ -40,13 +40,13 @@ toLines (Query node selectors starter) =
     let
         starterStr =
             case starter of
-                Find selector ->
-                    ("Query.find " ++ joinAsList selectorToString selector)
-                        |> addHtmlContext node
+                Find findSelectors ->
+                    ("Query.find " ++ joinAsList selectorToString findSelectors)
+                        |> addHtmlContext node (InternalSelector.queryAll findSelectors)
 
-                FindAll selector ->
-                    ("Query.findAll " ++ joinAsList selectorToString selector)
-                        |> addHtmlContext node
+                FindAll findAllSelectors ->
+                    ("Query.findAll " ++ joinAsList selectorToString findAllSelectors)
+                        |> addHtmlContext node (InternalSelector.queryAll findAllSelectors)
 
         selectorStr =
             List.map (selectorQueryToString node) selectors
@@ -64,16 +64,18 @@ selectorQueryToString node selectorQuery =
     case selectorQuery of
         Descendants selectors ->
             ("Query.descendants " ++ joinAsList selectorToString selectors)
-                |> addHtmlContext node
-
-        Children selectors ->
-            ("Query.children " ++ joinAsList selectorToString selectors)
-                |> addHtmlContext node
+                |> addHtmlContext node (InternalSelector.queryAll selectors)
 
 
-addHtmlContext : Node -> String -> String
-addHtmlContext node str =
-    String.join "\n\n" [ str, nodeTypeToString (Inert.toElmHtml node) ]
+addHtmlContext : Node -> (List ElmHtml -> List ElmHtml) -> String -> String
+addHtmlContext node transform str =
+    let
+        htmlStr =
+            transform [ Inert.toElmHtml node ]
+                |> List.map nodeTypeToString
+                |> String.join "\n"
+    in
+        String.join "\n\n" [ str, htmlStr ]
 
 
 joinAsList : (a -> String) -> List a -> String
@@ -94,19 +96,33 @@ prependSelector (Query node selectors starter) selector =
 
 
 traverse : Query -> Result QueryError (List ElmHtml)
-traverse (Query node selectors starter) =
+traverse (Query node selectorQueries starter) =
     let
         elmHtml =
             Inert.toElmHtml node
     in
         case starter of
-            Find selectors ->
-                InternalSelector.queryAll selectors [ elmHtml ]
+            Find findSelectors ->
+                InternalSelector.queryAll findSelectors [ elmHtml ]
                     |> verifySingle
-                    |> Result.map (\elem -> [ elem ])
+                    |> Result.map (\elem -> traverseSelectors selectorQueries [ elem ])
 
-            FindAll selectors ->
-                Ok (InternalSelector.queryAll selectors [ elmHtml ])
+            FindAll findAllSelectors ->
+                (InternalSelector.queryAll findAllSelectors [ elmHtml ])
+                    |> traverseSelectors selectorQueries
+                    |> Ok
+
+
+traverseSelectors : List SelectorQuery -> List ElmHtml -> List ElmHtml
+traverseSelectors selectorQueries elmHtml =
+    List.foldl traverseSelector elmHtml selectorQueries
+
+
+traverseSelector : SelectorQuery -> List ElmHtml -> List ElmHtml
+traverseSelector selectorQuery elmHtml =
+    case selectorQuery of
+        Descendants selectors ->
+            InternalSelector.queryAll selectors elmHtml
 
 
 verifySingle : List a -> Result QueryError a
