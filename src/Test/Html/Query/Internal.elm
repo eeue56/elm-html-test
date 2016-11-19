@@ -87,30 +87,54 @@ traverse (Query node selectors starter) =
     in
         case starter of
             Find selectors ->
-                case InternalSelector.queryAll selectors [ elmHtml ] of
-                    [] ->
-                        Err NoResultsForSingle
-
-                    singleton :: [] ->
-                        Ok [ singleton ]
-
-                    multiples ->
-                        Err (MultipleResultsForSingle (List.length multiples))
+                InternalSelector.queryAll selectors [ elmHtml ]
+                    |> verifySingle
+                    |> Result.map (\elem -> [ elem ])
 
             FindAll selectors ->
                 Ok (InternalSelector.queryAll selectors [ elmHtml ])
 
 
-toExpectation : Query -> (List ElmHtml -> Expectation) -> Expectation
-toExpectation query checkResults =
+verifySingle : List a -> Result QueryError a
+verifySingle list =
+    case list of
+        [] ->
+            Err NoResultsForSingle
+
+        singleton :: [] ->
+            Ok singleton
+
+        multiples ->
+            Err (MultipleResultsForSingle (List.length multiples))
+
+
+multipleToExpectation : Multiple -> (List ElmHtml -> Expectation) -> Expectation
+multipleToExpectation (Multiple query) check =
     case traverse query of
-        Ok results ->
-            checkResults results
+        Ok list ->
+            check list
 
-        Err NoResultsForSingle ->
-            -- TODO include what the query was and what the html was at this point
-            Expect.fail "No results found for single query"
+        Err error ->
+            Expect.fail (queryErrorToString query error)
 
-        Err (MultipleResultsForSingle resultCount) ->
+
+singleToExpectation : Single -> (ElmHtml -> Expectation) -> Expectation
+singleToExpectation (Single query) check =
+    case Result.andThen verifySingle (traverse query) of
+        Ok elem ->
+            check elem
+
+        Err error ->
+            Expect.fail (queryErrorToString query error)
+
+
+queryErrorToString : Query -> QueryError -> String
+queryErrorToString query error =
+    case error of
+        NoResultsForSingle ->
             -- TODO include what the query was and what the html was at this point
-            Expect.fail (toString resultCount ++ " results found for single query")
+            "No results found for single query"
+
+        MultipleResultsForSingle resultCount ->
+            -- TODO include what the query was and what the html was at this point
+            toString resultCount ++ " results found for single query"

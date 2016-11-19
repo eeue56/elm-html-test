@@ -56,9 +56,9 @@ descendants selectors (Internal.Single query) =
 
 
 count : (Int -> Expectation) -> Multiple -> Expectation
-count expect (Internal.Multiple query) =
+count expect ((Internal.Multiple query) as multiple) =
     (List.length >> expect >> failWithQuery "Query.count" query)
-        |> Internal.toExpectation query
+        |> Internal.multipleToExpectation multiple
 
 
 failWithQuery : String -> Internal.Query -> Expectation -> Expectation
