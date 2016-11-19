@@ -7,10 +7,10 @@
         "src"
     ],
     "exposed-modules": [],
-    "native-modules": true,
     "dependencies": {
         "eeue56/elm-html-in-elm": "1.0.1 <= v < 2.0.0",
         "eeue56/elm-html-query": "1.0.0 <= v < 2.0.0",
+        "eeue56/elm-stringify": "1.0.0 <= v < 2.0.0",
         "elm-community/elm-test": "3.0.0 <= v < 4.0.0",
         "elm-lang/core": "5.0.0 <= v < 6.0.0",
         "elm-lang/html": "2.0.0 <= v < 3.0.0"
