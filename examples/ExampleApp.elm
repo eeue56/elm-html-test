@@ -17,8 +17,9 @@ view : Model -> Html msg
 view model =
     div [ class "container" ]
         [ header [ class "funky themed", id "heading" ]
-            [ a [ href "example.com" ] [ text "Home" ]
-            , a [ href "example.com/about" ] [ text "About" ]
+            [ a [ href "http://elm-lang.org" ] [ text "home" ]
+            , a [ href "http://elm-lang.org/examples" ] [ text "examples" ]
+            , a [ href "http://elm-lang.org/docs" ] [ text "docs" ]
             ]
         , section [ class "funky themed", id "section" ]
             [ ul [ class "some-list" ]
