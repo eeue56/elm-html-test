@@ -35,19 +35,23 @@ class =
     namedAttr "class"
 
 
-namedAttr : String -> String -> Selector
-namedAttr name value =
-    Attribute
-        { name = "id"
-        , value = value
-        , asString = name ++ " " ++ toString value
-        }
-
-
 attr : String -> String -> Selector
 attr name value =
     Attribute
         { name = name
         , value = value
         , asString = "attr " ++ toString name ++ " " ++ toString value
+        }
+
+
+
+-- HELPERS --
+
+
+namedAttr : String -> String -> Selector
+namedAttr name value =
+    Attribute
+        { name = "id"
+        , value = value
+        , asString = name ++ " " ++ toString value
         }

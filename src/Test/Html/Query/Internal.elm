@@ -3,7 +3,7 @@ module Test.Html.Query.Internal exposing (..)
 import Test.Html.Query.Selector.Internal as InternalSelector exposing (Selector, selectorToString)
 import Html.Inert as Inert exposing (Node)
 import ElmHtml.InternalTypes exposing (ElmHtml)
-import ElmHtml.Query
+import Expect exposing (Expectation)
 
 
 {-| Note: the selectors are stored in reverse order for better prepending perf.
@@ -28,6 +28,11 @@ type Single
 
 type Multiple
     = Multiple Query
+
+
+type QueryError
+    = NoResultsForSingle
+    | MultipleResultsForSingle Int
 
 
 toLines : Query -> List String
@@ -74,15 +79,38 @@ prependSelector (Query node selectors starter) selector =
 -- REPRO NOTE: replace this implementation with Debug.crash "blah" to MVar compiler
 
 
-traverse : Query -> List ElmHtml
+traverse : Query -> Result QueryError (List ElmHtml)
 traverse (Query node selectors starter) =
     let
         elmHtml =
             Inert.toElmHtml node
     in
         case starter of
-            Find selector ->
-                []
+            Find selectors ->
+                case InternalSelector.queryAll selectors [ elmHtml ] of
+                    [] ->
+                        Err NoResultsForSingle
 
-            FindAll selector ->
-                []
+                    singleton :: [] ->
+                        Ok [ singleton ]
+
+                    multiples ->
+                        Err (MultipleResultsForSingle (List.length multiples))
+
+            FindAll selectors ->
+                Ok (InternalSelector.queryAll selectors [ elmHtml ])
+
+
+toExpectation : Query -> (List ElmHtml -> Expectation) -> Expectation
+toExpectation query checkResults =
+    case traverse query of
+        Ok results ->
+            checkResults results
+
+        Err NoResultsForSingle ->
+            -- TODO include what the query was and what the html was at this point
+            Expect.fail "No results found for single query"
+
+        Err (MultipleResultsForSingle resultCount) ->
+            -- TODO include what the query was and what the html was at this point
+            Expect.fail (toString resultCount ++ " results found for single query")
