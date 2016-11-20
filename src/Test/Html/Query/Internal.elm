@@ -5,7 +5,6 @@ import Html.Inert as Inert exposing (Node)
 import ElmHtml.InternalTypes exposing (ElmHtml)
 import ElmHtml.ToString exposing (nodeTypeToString)
 import Expect exposing (Expectation)
-import Util
 
 
 {-| Note: the selectors are stored in reverse order for better prepending perf.
@@ -57,18 +56,13 @@ selectorQueryToString node selectorQuery =
 addHtmlContext : Node -> (List ElmHtml -> List ElmHtml) -> String -> String
 addHtmlContext node transform str =
     let
-        nodes =
-            transform [ Inert.toElmHtml node ]
-
         htmlStr =
-            nodes
-                |> List.map (\str -> htmlPrefix ++ nodeTypeToString str)
-                |> String.join "\n\n"
+            transform [ Inert.toElmHtml node ]
+                |> List.indexedMap (\index elmHtml -> htmlPrefix ++ toString (index + 1) ++ ") " ++ nodeTypeToString elmHtml)
+                |> String.join "\n"
     in
         String.join "\n\n"
-            [ str ++ "   (" ++ Util.pluralize "result" "results" (List.length nodes) ++ ") "
-            , htmlStr
-            ]
+            [ str, htmlStr ]
 
 
 joinAsList : (a -> String) -> List a -> String
