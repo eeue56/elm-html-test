@@ -10,16 +10,12 @@ import Expect exposing (Expectation)
 {-| Note: the selectors are stored in reverse order for better prepending perf.
 -}
 type Query
-    = Query Inert.Node (List SelectorQuery) StarterQuery
-
-
-type StarterQuery
-    = Find (List Selector)
-    | FindAll (List Selector)
+    = Query Inert.Node (List SelectorQuery)
 
 
 type SelectorQuery
-    = Descendants (List Selector)
+    = Find (List Selector)
+    | FindAll (List Selector)
 
 
 type Single
@@ -36,34 +32,24 @@ type QueryError
 
 
 toLines : Query -> List String
-toLines (Query node selectors starter) =
-    let
-        starterStr =
-            case starter of
-                Find findSelectors ->
-                    ("Query.find " ++ joinAsList selectorToString findSelectors)
-                        |> addHtmlContext node (InternalSelector.queryAll findSelectors)
-
-                FindAll findAllSelectors ->
-                    ("Query.findAll " ++ joinAsList selectorToString findAllSelectors)
-                        |> addHtmlContext node (InternalSelector.queryAll findAllSelectors)
-
-        selectorStr =
-            List.map (selectorQueryToString node) selectors
-    in
-        starterStr :: selectorStr
+toLines (Query node selectors) =
+    List.map (selectorQueryToString node) selectors
 
 
 toHtmlString : Query -> String
-toHtmlString (Query node selectors starter) =
+toHtmlString (Query node selectors) =
     nodeTypeToString (Inert.toElmHtml node)
 
 
 selectorQueryToString : Node -> SelectorQuery -> String
 selectorQueryToString node selectorQuery =
     case selectorQuery of
-        Descendants selectors ->
-            ("Query.descendants " ++ joinAsList selectorToString selectors)
+        Find selectors ->
+            ("Query.find " ++ joinAsList selectorToString selectors)
+                |> addHtmlContext node (InternalSelector.queryAll selectors)
+
+        FindAll selectors ->
+            ("Query.findAll " ++ joinAsList selectorToString selectors)
                 |> addHtmlContext node (InternalSelector.queryAll selectors)
 
 
@@ -87,42 +73,36 @@ joinAsList toStr list =
 
 
 prependSelector : Query -> SelectorQuery -> Query
-prependSelector (Query node selectors starter) selector =
-    Query node (selector :: selectors) starter
-
-
-
--- REPRO NOTE: replace this implementation with Debug.crash "blah" to MVar compiler
+prependSelector (Query node selectors) selector =
+    Query node (selector :: selectors)
 
 
 traverse : Query -> Result QueryError (List ElmHtml)
-traverse (Query node selectorQueries starter) =
-    let
-        elmHtml =
-            Inert.toElmHtml node
-    in
-        case starter of
-            Find findSelectors ->
-                InternalSelector.queryAll findSelectors [ elmHtml ]
-                    |> verifySingle
-                    |> Result.map (\elem -> traverseSelectors selectorQueries [ elem ])
-
-            FindAll findAllSelectors ->
-                (InternalSelector.queryAll findAllSelectors [ elmHtml ])
-                    |> traverseSelectors selectorQueries
-                    |> Ok
+traverse (Query node selectorQueries) =
+    node
+        |> Inert.toElmHtml
+        |> traverseSelectors selectorQueries
 
 
-traverseSelectors : List SelectorQuery -> List ElmHtml -> List ElmHtml
+traverseSelectors : List SelectorQuery -> ElmHtml -> Result QueryError (List ElmHtml)
 traverseSelectors selectorQueries elmHtml =
-    List.foldl traverseSelector elmHtml selectorQueries
+    List.foldl
+        (traverseSelector >> Result.andThen)
+        (Ok [ elmHtml ])
+        selectorQueries
 
 
-traverseSelector : SelectorQuery -> List ElmHtml -> List ElmHtml
-traverseSelector selectorQuery elmHtml =
+traverseSelector : SelectorQuery -> List ElmHtml -> Result QueryError (List ElmHtml)
+traverseSelector selectorQuery elmHtmlList =
     case selectorQuery of
-        Descendants selectors ->
-            InternalSelector.queryAll selectors elmHtml
+        Find selectors ->
+            InternalSelector.queryAll selectors elmHtmlList
+                |> verifySingle
+                |> Result.map (\elem -> [ elem ])
+
+        FindAll selectors ->
+            InternalSelector.queryAll selectors elmHtmlList
+                |> Ok
 
 
 verifySingle : List a -> Result QueryError a
