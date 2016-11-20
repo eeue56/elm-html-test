@@ -59,7 +59,7 @@ addHtmlContext node transform str =
         htmlStr =
             transform [ Inert.toElmHtml node ]
                 |> List.indexedMap (\index elmHtml -> htmlPrefix ++ toString (index + 1) ++ ") " ++ nodeTypeToString elmHtml)
-                |> String.join "\n"
+                |> String.join "\n\n"
     in
         String.join "\n\n"
             [ str, htmlStr ]
