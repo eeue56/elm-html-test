@@ -38,7 +38,7 @@ type QueryError
 
 toLines : Query -> List String
 toLines (Query node selectors starter) =
-    List.map (selectorQueryToString node) selectors
+    List.map (selectorQueryToString node) (List.reverse selectors)
 
 
 toOutputLine : Query -> String
@@ -113,7 +113,7 @@ traverse (Query node selectorQueries starter) =
 
 traverseSelectors : List SelectorQuery -> List ElmHtml -> List ElmHtml
 traverseSelectors selectorQueries elmHtml =
-    List.foldl traverseSelector elmHtml selectorQueries
+    List.foldr traverseSelector elmHtml selectorQueries
 
 
 traverseSelector : SelectorQuery -> List ElmHtml -> List ElmHtml
