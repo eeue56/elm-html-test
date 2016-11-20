@@ -21,8 +21,7 @@ type alias Multiple =
 
 fromHtml : Html msg -> Single
 fromHtml html =
-    Internal.Find []
-        |> Internal.Query (Inert.fromHtml html) []
+    Internal.Query (Inert.fromHtml html) []
         |> Internal.Single
 
 
@@ -32,14 +31,14 @@ fromHtml html =
 
 findAll : List Selector -> Single -> Multiple
 findAll selectors (Internal.Single query) =
-    Internal.Descendants selectors
+    Internal.FindAll selectors
         |> Internal.prependSelector query
         |> Internal.Multiple
 
 
 find : List Selector -> Single -> Single
 find selectors (Internal.Single query) =
-    Internal.Descendants selectors
+    Internal.Find selectors
         |> Internal.prependSelector query
         |> Internal.Single
 
