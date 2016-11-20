@@ -26,18 +26,21 @@ testText =
         [ test "expect 4x <li> somewhere on the page" <|
             \() ->
                 view exampleModel
+                    |> Query.fromHtml
                     |> Query.findAll [ tag "li" ]
                     |> Query.count (Expect.equal 4)
         , test "expect 4x <li> inside a <ul>" <|
             \() ->
                 view exampleModel
+                    |> Query.fromHtml
                     |> Query.find [ tag "ul" ]
-                    |> Query.descendants [ tag "li" ]
+                    |> Query.findAll [ tag "li" ]
                     |> Query.count (Expect.equal 4)
         , test "(this should fail) expect header to have 4 links in it, even though it has 3" <|
             \() ->
                 view exampleModel
+                    |> Query.fromHtml
                     |> Query.find [ id "heading" ]
-                    |> Query.descendants [ tag "a" ]
+                    |> Query.findAll [ tag "a" ]
                     |> Query.count (Expect.equal 4)
         ]

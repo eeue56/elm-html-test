@@ -1,4 +1,4 @@
-module Test.Html.Query exposing (Single, Multiple, find, findAll, descendants, count)
+module Test.Html.Query exposing (Single, Multiple, fromHtml, find, findAll, count)
 
 import Html exposing (Html)
 import Test.Html.Query.Selector.Internal as Selector exposing (Selector)
@@ -19,29 +19,29 @@ type alias Multiple =
 -- STARTERS --
 
 
-find : List Selector -> Html msg -> Single
-find selectors html =
-    Internal.Find selectors
+fromHtml : Html msg -> Single
+fromHtml html =
+    Internal.Find []
         |> Internal.Query (Inert.fromHtml html) []
         |> Internal.Single
-
-
-findAll : List Selector -> Html msg -> Multiple
-findAll selectors html =
-    Internal.FindAll selectors
-        |> Internal.Query (Inert.fromHtml html) []
-        |> Internal.Multiple
 
 
 
 -- SELECTORS --
 
 
-descendants : List Selector -> Single -> Multiple
-descendants selectors (Internal.Single query) =
+findAll : List Selector -> Single -> Multiple
+findAll selectors (Internal.Single query) =
     Internal.Descendants selectors
         |> Internal.prependSelector query
         |> Internal.Multiple
+
+
+find : List Selector -> Single -> Single
+find selectors (Internal.Single query) =
+    Internal.Descendants selectors
+        |> Internal.prependSelector query
+        |> Internal.Single
 
 
 
@@ -60,13 +60,19 @@ failWithQuery queryName query expectation =
         Just { given, message } ->
             (Internal.toLines query ++ [ queryName ])
                 |> List.map prefixOutputLine
-                |> ((::) (Internal.toHtmlString query))
+                |> ((::) (addQueryFromHtmlLine query))
                 |> String.join "\n\n\n"
                 |> (\str -> str ++ "\n\n\n" ++ message)
                 |> Expect.fail
 
         Nothing ->
             expectation
+
+
+addQueryFromHtmlLine : Internal.Query -> String
+addQueryFromHtmlLine query =
+    String.join "\n\n"
+        [ prefixOutputLine "Query.fromHtml", Internal.toOutputLine query ]
 
 
 prefixOutputLine : String -> String

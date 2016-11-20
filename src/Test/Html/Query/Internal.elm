@@ -5,6 +5,7 @@ import Html.Inert as Inert exposing (Node)
 import ElmHtml.InternalTypes exposing (ElmHtml)
 import ElmHtml.ToString exposing (nodeTypeToString)
 import Expect exposing (Expectation)
+import Util
 
 
 {-| Note: the selectors are stored in reverse order for better prepending perf.
@@ -37,45 +38,37 @@ type QueryError
 
 toLines : Query -> List String
 toLines (Query node selectors starter) =
-    let
-        starterStr =
-            case starter of
-                Find findSelectors ->
-                    ("Query.find " ++ joinAsList selectorToString findSelectors)
-                        |> addHtmlContext node (InternalSelector.queryAll findSelectors)
-
-                FindAll findAllSelectors ->
-                    ("Query.findAll " ++ joinAsList selectorToString findAllSelectors)
-                        |> addHtmlContext node (InternalSelector.queryAll findAllSelectors)
-
-        selectorStr =
-            List.map (selectorQueryToString node) selectors
-    in
-        starterStr :: selectorStr
+    List.map (selectorQueryToString node) selectors
 
 
-toHtmlString : Query -> String
-toHtmlString (Query node selectors starter) =
-    nodeTypeToString (Inert.toElmHtml node)
+toOutputLine : Query -> String
+toOutputLine (Query node selectors starter) =
+    htmlPrefix ++ nodeTypeToString (Inert.toElmHtml node)
 
 
 selectorQueryToString : Node -> SelectorQuery -> String
 selectorQueryToString node selectorQuery =
     case selectorQuery of
         Descendants selectors ->
-            ("Query.descendants " ++ joinAsList selectorToString selectors)
+            ("Query.findAll " ++ joinAsList selectorToString selectors)
                 |> addHtmlContext node (InternalSelector.queryAll selectors)
 
 
 addHtmlContext : Node -> (List ElmHtml -> List ElmHtml) -> String -> String
 addHtmlContext node transform str =
     let
-        htmlStr =
+        nodes =
             transform [ Inert.toElmHtml node ]
-                |> List.map nodeTypeToString
-                |> String.join "\n"
+
+        htmlStr =
+            nodes
+                |> List.map (\str -> htmlPrefix ++ nodeTypeToString str)
+                |> String.join "\n\n"
     in
-        String.join "\n\n" [ str, htmlStr ]
+        String.join "\n\n"
+            [ str ++ "   (" ++ Util.pluralize "result" "results" (List.length nodes) ++ ") "
+            , htmlStr
+            ]
 
 
 joinAsList : (a -> String) -> List a -> String
@@ -84,6 +77,11 @@ joinAsList toStr list =
         "[]"
     else
         "[ " ++ String.join ", " (List.map toStr list) ++ " ]"
+
+
+htmlPrefix : String
+htmlPrefix =
+    "    "
 
 
 prependSelector : Query -> SelectorQuery -> Query
