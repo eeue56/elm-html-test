@@ -4,8 +4,9 @@ module Html.Inert exposing (Node, fromHtml, toElmHtml)
 -}
 
 import Html exposing (Html)
+import Native.HtmlAsJson
 import Json.Decode
-import Stringify exposing (stringify)
+import Html exposing (Html)
 import ElmHtml.InternalTypes exposing (decodeElmHtml, ElmHtml)
 
 
@@ -20,9 +21,14 @@ fromHtml html =
         |> Node
 
 
+toJson : Html a -> String
+toJson =
+    Native.HtmlAsJson.toJson
+
+
 toElmHtml : Node -> ElmHtml
 toElmHtml (Node html) =
-    case Json.Decode.decodeString decodeElmHtml (stringify html) of
+    case Json.Decode.decodeString decodeElmHtml (toJson html) of
         Ok elmHtml ->
             elmHtml
 
