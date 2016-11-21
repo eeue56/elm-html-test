@@ -1,11 +1,11 @@
-module Test.Html.Selector exposing (Selector, all, classes, id, attr, class, tag, text)
+module Test.Html.Selector exposing (Selector, all, classes, id, attribute, class, tag, text)
 
 {-|
 @docs Selector
 
 ## General Selectors
 
-@docs attr, tag, text, all
+@docs attribute, tag, text, all
 
 ## Attributes
 
@@ -61,12 +61,12 @@ class =
 
 {-| TODO
 -}
-attr : String -> String -> Selector
-attr name value =
+attribute : String -> String -> Selector
+attribute name value =
     Attribute
         { name = name
         , value = value
-        , asString = "attr " ++ toString name ++ " " ++ toString value
+        , asString = "attribute " ++ toString name ++ " " ++ toString value
         }
 
 
