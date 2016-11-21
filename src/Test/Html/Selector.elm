@@ -95,7 +95,7 @@ text =
 namedAttr : String -> String -> Selector
 namedAttr name value =
     Attribute
-        { name = "id"
+        { name = name
         , value = value
         , asString = name ++ " " ++ toString value
         }
