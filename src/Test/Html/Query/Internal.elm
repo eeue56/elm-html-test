@@ -214,4 +214,4 @@ showSelectorOutcome elmHtmlList selector =
             else
                 "✓"
     in
-        String.join " " [ outcome, selectorToString selector ]
+        String.join " " [ outcome, "has", selectorToString selector ]
