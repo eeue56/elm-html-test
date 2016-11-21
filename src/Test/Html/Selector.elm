@@ -1,6 +1,6 @@
-module Test.Html.Query.Selector exposing (Selector, all, classes, id, attr, class, tag, text)
+module Test.Html.Selector exposing (Selector, all, classes, id, attr, class, tag, text)
 
-import Test.Html.Query.Selector.Internal as Internal exposing (..)
+import Test.Html.Selector.Internal as Internal exposing (..)
 
 
 type alias Selector =

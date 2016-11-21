@@ -1,6 +1,6 @@
 module Test.Html.Query.Internal exposing (..)
 
-import Test.Html.Query.Selector.Internal as InternalSelector exposing (Selector, selectorToString)
+import Test.Html.Selector.Internal as InternalSelector exposing (Selector, selectorToString)
 import Html.Inert as Inert exposing (Node)
 import ElmHtml.InternalTypes exposing (ElmHtml)
 import ElmHtml.ToString exposing (nodeTypeToString)

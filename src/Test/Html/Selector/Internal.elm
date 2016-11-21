@@ -1,4 +1,4 @@
-module Test.Html.Query.Selector.Internal exposing (..)
+module Test.Html.Selector.Internal exposing (..)
 
 import ElmHtml.InternalTypes exposing (ElmHtml)
 import ElmHtml.Query

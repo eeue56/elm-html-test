@@ -5,7 +5,7 @@ import Expect
 import Test exposing (..)
 import Json.Encode exposing (Value)
 import Test.Html.Query as Query
-import Test.Html.Query.Selector exposing (..)
+import Test.Html.Selector exposing (..)
 import ExampleApp exposing (view, exampleModel)
 
 

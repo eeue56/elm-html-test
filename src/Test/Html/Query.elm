@@ -1,7 +1,7 @@
 module Test.Html.Query exposing (Single, Multiple, fromHtml, find, findAll, count, has, each)
 
 import Html exposing (Html)
-import Test.Html.Query.Selector.Internal as Selector exposing (Selector, selectorToString)
+import Test.Html.Selector.Internal as Selector exposing (Selector, selectorToString)
 import Test.Html.Query.Internal as Internal exposing (QueryError(..))
 import Html.Inert as Inert
 import Expect exposing (Expectation)
