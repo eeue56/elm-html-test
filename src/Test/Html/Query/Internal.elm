@@ -43,26 +43,28 @@ toOutputLine (Query node selectors) =
 
 selectorQueryToString : Node -> SelectorQuery -> String
 selectorQueryToString node selectorQuery =
-    case selectorQuery of
-        FindAll selectors ->
-            ("Query.findAll " ++ joinAsList selectorToString selectors)
-                |> addHtmlContext node (InternalSelector.queryAll selectors)
-
-        Find selectors ->
-            ("Query.find " ++ joinAsList selectorToString selectors)
-                |> addHtmlContext node (InternalSelector.queryAll selectors)
-
-
-addHtmlContext : Node -> (List ElmHtml -> List ElmHtml) -> String -> String
-addHtmlContext node transform str =
     let
-        htmlStr =
-            transform [ Inert.toElmHtml node ]
-                |> List.indexedMap (\index elmHtml -> htmlPrefix ++ toString (index + 1) ++ ") " ++ nodeTypeToString elmHtml)
-                |> String.join "\n\n"
+        ( str, htmlStr ) =
+            case selectorQuery of
+                FindAll selectors ->
+                    ( "Query.findAll " ++ joinAsList selectorToString selectors
+                    , getHtmlContext (InternalSelector.queryAll selectors [ Inert.toElmHtml node ])
+                    )
+
+                Find selectors ->
+                    ( "Query.find " ++ joinAsList selectorToString selectors
+                    , getHtmlContext (InternalSelector.queryAll selectors [ Inert.toElmHtml node ])
+                    )
     in
         String.join "\n\n"
             [ str, htmlStr ]
+
+
+getHtmlContext : List ElmHtml -> String
+getHtmlContext elmHtmlList =
+    elmHtmlList
+        |> List.indexedMap (\index elmHtml -> htmlPrefix ++ toString (index + 1) ++ ") " ++ nodeTypeToString elmHtml)
+        |> String.join "\n\n"
 
 
 joinAsList : (a -> String) -> List a -> String
@@ -126,6 +128,35 @@ verifySingle list =
             Err (MultipleResultsForSingle (List.length multiples))
 
 
+expectAll : (Single -> Expectation) -> Multiple -> Expectation
+expectAll check (Multiple query) =
+    case traverse query of
+        Ok list ->
+            expectAllHelp check list
+
+        Err error ->
+            Expect.fail (queryErrorToString query error)
+
+
+expectAllHelp : (Single -> Expectation) -> List ElmHtml -> Expectation
+expectAllHelp check list =
+    case list of
+        [] ->
+            Expect.pass
+
+        elmHtml :: rest ->
+            let
+                outcome =
+                    Query (Inert.fromElmHtml elmHtml) []
+                        |> Single
+                        |> check
+            in
+                if outcome == Expect.pass then
+                    expectAllHelp check rest
+                else
+                    outcome
+
+
 multipleToExpectation : Multiple -> (List ElmHtml -> Expectation) -> Expectation
 multipleToExpectation (Multiple query) check =
     case traverse query of
@@ -156,3 +187,31 @@ queryErrorToString query error =
         MultipleResultsForSingle resultCount ->
             -- TODO include what the query was and what the html was at this point
             toString resultCount ++ " results found for single query"
+
+
+has : List Selector -> Query -> Expectation
+has selectors query =
+    case traverse query of
+        Ok elmHtmlList ->
+            if List.isEmpty (InternalSelector.queryAll selectors elmHtmlList) then
+                selectors
+                    |> List.map (showSelectorOutcome elmHtmlList)
+                    |> String.join "\n"
+                    |> Expect.fail
+            else
+                Expect.pass
+
+        Err error ->
+            Expect.fail (queryErrorToString query error)
+
+
+showSelectorOutcome : List ElmHtml -> Selector -> String
+showSelectorOutcome elmHtmlList selector =
+    let
+        outcome =
+            if List.isEmpty (InternalSelector.queryAll [ selector ] elmHtmlList) then
+                "✗"
+            else
+                "✓"
+    in
+        String.join " " [ outcome, selectorToString selector ]

@@ -1,7 +1,7 @@
-module Test.Html.Query exposing (Single, Multiple, fromHtml, find, findAll, count)
+module Test.Html.Query exposing (Single, Multiple, fromHtml, find, findAll, count, has, each)
 
 import Html exposing (Html)
-import Test.Html.Query.Selector.Internal as Selector exposing (Selector)
+import Test.Html.Query.Selector.Internal as Selector exposing (Selector, selectorToString)
 import Test.Html.Query.Internal as Internal exposing (QueryError(..))
 import Html.Inert as Inert
 import Expect exposing (Expectation)
@@ -51,6 +51,21 @@ count : (Int -> Expectation) -> Multiple -> Expectation
 count expect ((Internal.Multiple query) as multiple) =
     (List.length >> expect >> failWithQuery "Query.count" query)
         |> Internal.multipleToExpectation multiple
+
+
+has : List Selector -> Single -> Expectation
+has selectors (Internal.Single query) =
+    Internal.has selectors query
+        |> failWithQuery ("Query.has " ++ Internal.joinAsList selectorToString selectors) query
+
+
+each : (Single -> Expectation) -> Multiple -> Expectation
+each check query =
+    Internal.expectAll check query
+
+
+
+-- HELPERS --
 
 
 failWithQuery : String -> Internal.Query -> Expectation -> Expectation

@@ -9,6 +9,7 @@ type Selector
     | Classes (List String)
     | Attribute { name : String, value : String, asString : String }
     | Tag { name : String, asString : String }
+    | Text String
 
 
 selectorToString : Selector -> String
@@ -27,6 +28,9 @@ selectorToString criteria =
 
         Tag { asString } ->
             asString
+
+        Text text ->
+            "text " ++ toString text
 
 
 queryAll : List Selector -> List ElmHtml -> List ElmHtml
@@ -53,3 +57,6 @@ query selector list =
 
         Tag { name } ->
             List.concatMap (ElmHtml.Query.queryByTagName name) list
+
+        Text text ->
+            List.concatMap (ElmHtml.Query.query (ElmHtml.Query.ContainsText text)) list

@@ -43,4 +43,17 @@ testText =
                     |> Query.find [ id "heading" ]
                     |> Query.findAll [ tag "a" ]
                     |> Query.count (Expect.equal 4)
+        , test "expect footer to have footer text" <|
+            \() ->
+                view exampleModel
+                    |> Query.fromHtml
+                    |> Query.find [ tag "footer" ]
+                    |> Query.has [ tag "footer", text "this is the footer" ]
+        , test "expect each <li> to have classes list-item and themed" <|
+            \() ->
+                view exampleModel
+                    |> Query.fromHtml
+                    |> Query.find [ tag "ul" ]
+                    |> Query.findAll [ tag "li" ]
+                    |> Query.each (Query.has [ classes [ "list-item", "themed" ] ])
         ]

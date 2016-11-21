@@ -1,4 +1,4 @@
-module Test.Html.Query.Selector exposing (Selector, all, classes, id, attr, class, tag)
+module Test.Html.Query.Selector exposing (Selector, all, classes, id, attr, class, tag, text)
 
 import Test.Html.Query.Selector.Internal as Internal exposing (..)
 
@@ -42,6 +42,11 @@ attr name value =
         , value = value
         , asString = "attr " ++ toString name ++ " " ++ toString value
         }
+
+
+text : String -> Selector
+text =
+    Internal.Text
 
 
 
