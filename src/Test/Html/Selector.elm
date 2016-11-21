@@ -1,27 +1,49 @@
 module Test.Html.Selector exposing (Selector, all, classes, id, attr, class, tag, text)
 
+{-|
+@docs Selector
+
+## General Selectors
+
+@docs attr, tag, text, all
+
+## Attributes
+
+@docs classes, class, id
+-}
+
 import Test.Html.Selector.Internal as Internal exposing (..)
 
 
+{-| TODO
+-}
 type alias Selector =
     Internal.Selector
 
 
+{-| TODO
+-}
 all : List Selector -> Selector
 all =
     All
 
 
+{-| TODO
+-}
 classes : List String -> Selector
 classes =
     Classes
 
 
+{-| TODO
+-}
 id : String -> Selector
 id =
     namedAttr "id"
 
 
+{-| TODO
+-}
 tag : String -> Selector
 tag name =
     Tag
@@ -30,11 +52,15 @@ tag name =
         }
 
 
+{-| TODO
+-}
 class : String -> Selector
 class =
     namedAttr "class"
 
 
+{-| TODO
+-}
 attr : String -> String -> Selector
 attr name value =
     Attribute
@@ -44,6 +70,8 @@ attr name value =
         }
 
 
+{-| TODO
+-}
 text : String -> Selector
 text =
     Internal.Text

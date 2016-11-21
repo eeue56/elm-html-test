@@ -6,7 +6,7 @@
     "source-directories": [
         "src"
     ],
-    "exposed-modules": [],
+    "exposed-modules": ["Test.Html.Selector", "Test.Html.Query"],
     "native-modules": true,
     "dependencies": {
         "eeue56/elm-html-in-elm": "1.0.1 <= v < 2.0.0",
