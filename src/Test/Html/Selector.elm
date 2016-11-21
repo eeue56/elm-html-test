@@ -1,4 +1,18 @@
-module Test.Html.Selector exposing (Selector, all, classes, id, attribute, boolAttribute, class, tag, text)
+module Test.Html.Selector
+    exposing
+        ( Selector
+        , all
+        , classes
+        , id
+        , attribute
+        , boolAttribute
+        , class
+        , tag
+        , text
+        , checked
+        , selected
+        , disabled
+        )
 
 {-|
 @docs Selector
@@ -9,7 +23,7 @@ module Test.Html.Selector exposing (Selector, all, classes, id, attribute, boolA
 
 ## Attributes
 
-@docs classes, class, id
+@docs classes, class, id, checked, selected, disabled
 -}
 
 import Test.Html.Selector.Internal as Internal exposing (..)
@@ -88,6 +102,27 @@ text =
     Internal.Text
 
 
+{-| TODO
+-}
+selected : Bool -> Selector
+selected =
+    namedBoolAttr "selected"
+
+
+{-| TODO
+-}
+disabled : Bool -> Selector
+disabled =
+    namedBoolAttr "disabled"
+
+
+{-| TODO
+-}
+checked : Bool -> Selector
+checked =
+    namedBoolAttr "checked"
+
+
 
 -- HELPERS --
 
@@ -95,6 +130,15 @@ text =
 namedAttr : String -> String -> Selector
 namedAttr name value =
     Attribute
+        { name = name
+        , value = value
+        , asString = name ++ " " ++ toString value
+        }
+
+
+namedBoolAttr : String -> Bool -> Selector
+namedBoolAttr name value =
+    BoolAttribute
         { name = name
         , value = value
         , asString = name ++ " " ++ toString value
