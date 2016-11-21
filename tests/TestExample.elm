@@ -26,12 +26,12 @@ all =
                         |> Query.find [ tag "ul" ]
                         |> Query.findAll [ tag "li" ]
                         |> Query.count (Expect.equal 4)
-            , test "(this should fail) expect header to have 4 links in it, even though it has 3" <|
+            , test "expect header to have 3 links in it" <|
                 \() ->
                     output
                         |> Query.find [ id "heading" ]
                         |> Query.findAll [ tag "a" ]
-                        |> Query.count (Expect.equal 4)
+                        |> Query.count (Expect.equal 3)
             , test "expect footer to have footer text" <|
                 \() ->
                     output
