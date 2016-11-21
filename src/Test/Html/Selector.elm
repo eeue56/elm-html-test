@@ -1,11 +1,11 @@
-module Test.Html.Selector exposing (Selector, all, classes, id, attribute, class, tag, text)
+module Test.Html.Selector exposing (Selector, all, classes, id, attribute, boolAttribute, class, tag, text)
 
 {-|
 @docs Selector
 
 ## General Selectors
 
-@docs attribute, tag, text, all
+@docs tag, text, attribute, boolAttribute, all
 
 ## Attributes
 
@@ -67,6 +67,17 @@ attribute name value =
         { name = name
         , value = value
         , asString = "attribute " ++ toString name ++ " " ++ toString value
+        }
+
+
+{-| TODO
+-}
+boolAttribute : String -> Bool -> Selector
+boolAttribute name value =
+    BoolAttribute
+        { name = name
+        , value = value
+        , asString = "boolAttribute " ++ toString name ++ " " ++ toString value
         }
 
 

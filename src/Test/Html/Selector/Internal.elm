@@ -8,6 +8,7 @@ type Selector
     = All (List Selector)
     | Classes (List String)
     | Attribute { name : String, value : String, asString : String }
+    | BoolAttribute { name : String, value : Bool, asString : String }
     | Tag { name : String, asString : String }
     | Text String
 
@@ -24,6 +25,9 @@ selectorToString criteria =
             "classes " ++ toString (String.join " " list)
 
         Attribute { asString } ->
+            asString
+
+        BoolAttribute { asString } ->
             asString
 
         Tag { asString } ->
@@ -54,6 +58,9 @@ query selector list =
 
         Attribute { name, value } ->
             List.concatMap (ElmHtml.Query.queryByAttribute name value) list
+
+        BoolAttribute { name, value } ->
+            List.concatMap (ElmHtml.Query.queryByBoolAttribute name value) list
 
         Tag { name } ->
             List.concatMap (ElmHtml.Query.queryByTagName name) list
