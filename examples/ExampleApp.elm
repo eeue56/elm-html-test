@@ -29,5 +29,5 @@ view model =
                 , li [ class "list-item themed" ] [ text "fourth item" ]
                 ]
             ]
-        , footer [] [ text "this is the foote" ]
+        , footer [] [ text "this is the footer" ]
         ]
