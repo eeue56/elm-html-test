@@ -2,11 +2,12 @@ module Test.Html.Selector
     exposing
         ( Selector
         , all
-        , classes
         , id
         , attribute
         , boolAttribute
         , class
+        , classes
+        , className
         , tag
         , text
         , checked
@@ -23,7 +24,7 @@ module Test.Html.Selector
 
 ## Attributes
 
-@docs classes, class, id, checked, selected, disabled
+@docs id, class, classes, className, checked, selected, disabled
 -}
 
 import Test.Html.Selector.Internal as Internal exposing (..)
@@ -51,6 +52,13 @@ classes =
 
 {-| TODO
 -}
+class : String -> Selector
+class name =
+    classes [ name ]
+
+
+{-| TODO
+-}
 id : String -> Selector
 id =
     namedAttr "id"
@@ -68,9 +76,9 @@ tag name =
 
 {-| TODO
 -}
-class : String -> Selector
-class =
-    namedAttr "class"
+className : String -> Selector
+className =
+    namedAttr "className"
 
 
 {-| TODO

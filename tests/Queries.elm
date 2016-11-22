@@ -26,11 +26,24 @@ testFindAll =
                         output
                             |> Query.findAll []
                             |> Query.count (Expect.equal 1)
-                , test "recognizes its class" <|
+                , test "recognizes its class in conjunction with all" <|
                     \() ->
                         output
                             |> Query.findAll []
-                            |> Query.each (Query.has [ class "container" ])
+                            |> Query.all
+                                [ Query.each (Query.has [ class "container" ])
+                                , Query.each (Query.has [ tag "div" ])
+                                ]
+                , test "recognizes its exact className" <|
+                    \() ->
+                        output
+                            |> Query.find []
+                            |> Query.has [ className "container" ]
+                , test "recognizes its class by classes" <|
+                    \() ->
+                        output
+                            |> Query.findAll []
+                            |> Query.each (Query.has [ classes [ "container" ] ])
                 ]
             , describe "finds children"
                 [ test "with tag selectors that return one match at the start" <|
