@@ -62,6 +62,11 @@ testView =
                     output
                         |> Query.find [ tag "footer" ]
                         |> Query.has [ tag "footer", text "this is the footer" ]
+            , test "(this should fail) expect footer to have text it doesn't have" <|
+                \() ->
+                    output
+                        |> Query.find [ tag "footer" ]
+                        |> Query.has [ tag "footer", text "this is SPARTA!!!" ]
             , test "expect each <li> to have classes list-item and themed" <|
                 \() ->
                     output
