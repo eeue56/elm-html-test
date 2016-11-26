@@ -7,6 +7,8 @@ import Json.Encode exposing (Value)
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (..)
 import ExampleApp exposing (view, exampleModel)
+import Html
+import Fuzz exposing (..)
 
 
 main : TestProgram
@@ -50,6 +52,22 @@ testView =
                     output
                         |> Query.find [ tag "footer" ]
                         |> Query.has [ tag "footer", text "this is the footer" ]
+            , describe "fuzzing"
+                [ fuzz (list string) "counting contents of a <ul>" <|
+                    \names ->
+                        names
+                            |> List.concatMap
+                                (\name ->
+                                    if String.length name % 3 == 1 then
+                                        []
+                                    else
+                                        [ Html.li [] [ Html.text name ] ]
+                                )
+                            |> Html.ul []
+                            |> Query.fromHtml
+                            |> Query.findAll [ tag "li" ]
+                            |> Query.count (Expect.equal (List.length names))
+                ]
             , test "expect each <li> to have classes list-item and themed" <|
                 \() ->
                     output
