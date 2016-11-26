@@ -5,7 +5,6 @@ import Html.Inert as Inert exposing (Node)
 import ElmHtml.InternalTypes exposing (ElmHtml(..))
 import ElmHtml.ToString exposing (nodeTypeToString)
 import Expect exposing (Expectation)
-import Array
 
 
 {-| Note: the selectors are stored in reverse order for better prepending perf.
@@ -130,10 +129,7 @@ toLinesHelp expectationFailure node selectorQueries queryName results =
                                 node
                                     |> Inert.toElmHtml
                                     |> getChildren
-                                    |> Array.fromList
-                                    |> Array.get index
-                                    |> Maybe.map (\elem -> [ elem ])
-                                    |> Maybe.withDefault []
+                                    |> getElementAt index
 
                             result =
                                 ("Query.index " ++ toString index)
@@ -178,8 +174,42 @@ prependSelector (Query node selectors) selector =
     Query node (selector :: selectors)
 
 
+{-| This is a more efficient implementation of the following:
 
--- REPRO NOTE: replace this implementation with Debug.crash "blah" to MVar compiler
+list
+    |> Array.fromList
+    |> Array.get index
+    |> Maybe.map (\elem -> [ elem ])
+    |> Maybe.withDefault []
+
+It also supports wraparound via negative indeces, e.g. passing -1 for an index
+gets you the last element.
+-}
+getElementAt : Int -> List a -> List a
+getElementAt index list =
+    let
+        length =
+            List.length list
+    in
+        -- Avoid attempting % 0
+        if length == 0 then
+            []
+        else
+            -- Support wraparound, e.g. passing -1 to get the last element.
+            getElementAtHelp (index % length) list
+
+
+getElementAtHelp : Int -> List a -> List a
+getElementAtHelp index list =
+    case list of
+        [] ->
+            []
+
+        first :: rest ->
+            if index == 0 then
+                [ first ]
+            else
+                getElementAtHelp (index - 1) rest
 
 
 traverse : Query -> Result QueryError (List ElmHtml)
@@ -224,12 +254,16 @@ traverseSelector selectorQuery elmHtmlList =
                 |> Maybe.withDefault (Err NoResultsForSingle)
 
         Index index ->
-            elmHtmlList
-                |> List.concatMap getChildren
-                |> Array.fromList
-                |> Array.get index
-                |> Maybe.map (\elem -> Ok [ elem ])
-                |> Maybe.withDefault (Err NoResultsForSingle)
+            let
+                elements =
+                    elmHtmlList
+                        |> List.concatMap getChildren
+                        |> getElementAt index
+            in
+                if List.length elements == 1 then
+                    Ok elements
+                else
+                    Err NoResultsForSingle
 
 
 getChildren : ElmHtml -> List ElmHtml

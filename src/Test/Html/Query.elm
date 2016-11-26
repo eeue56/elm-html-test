@@ -171,6 +171,9 @@ first (Internal.Multiple query) =
 `Query.index 0` would match the first element, and `Query.index 1` would match
 the second element.
 
+You can pass negative numbers to "wrap around" - for example, `Query.index -1`
+will match the last element, and `Query.index -2` will match the second-to-last.
+
 If the index falls outside the bounds of the match, the test will fail.
 
     import Html exposing (div, ul, li)
