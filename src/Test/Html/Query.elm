@@ -1,4 +1,4 @@
-module Test.Html.Query exposing (Single, Multiple, fromHtml, find, findAll, count, has, each, all)
+module Test.Html.Query exposing (Single, Multiple, fromHtml, find, findAll, count, has, each)
 
 {-|
 
@@ -10,7 +10,7 @@ module Test.Html.Query exposing (Single, Multiple, fromHtml, find, findAll, coun
 
 ## Expecting
 
-@docs count, has, each, all
+@docs count, has, each
 -}
 
 import Html exposing (Html)
@@ -91,24 +91,6 @@ has selectors (Internal.Single query) =
 each : (Single -> Expectation) -> Multiple -> Expectation
 each check query =
     Internal.expectAll check query
-
-
-{-| -}
-all : List (query -> Expectation) -> query -> Expectation
-all list query =
-    case list of
-        [] ->
-            Expect.pass
-
-        check :: rest ->
-            let
-                outcome =
-                    check query
-            in
-                if outcome == Expect.pass then
-                    all rest query
-                else
-                    outcome
 
 
 

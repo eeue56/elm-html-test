@@ -8,6 +8,7 @@ module Test.Html.Selector
         , class
         , classes
         , className
+        , index
         , tag
         , text
         , checked
@@ -20,7 +21,7 @@ module Test.Html.Selector
 
 ## General Selectors
 
-@docs tag, text, attribute, boolAttribute, all
+@docs tag, text, attribute, boolAttribute, index, all
 
 ## Attributes
 
@@ -129,6 +130,13 @@ disabled =
 checked : Bool -> Selector
 checked =
     namedBoolAttr "checked"
+
+
+{-| TODO
+-}
+index : Int -> Selector
+index =
+    Debug.crash "TODO"
 
 
 

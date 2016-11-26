@@ -30,7 +30,7 @@ testFindAll =
                     \() ->
                         output
                             |> Query.findAll []
-                            |> Query.all
+                            |> Expect.all
                                 [ Query.each (Query.has [ class "container" ])
                                 , Query.each (Query.has [ tag "div" ])
                                 ]
@@ -45,7 +45,14 @@ testFindAll =
                             |> Query.findAll []
                             |> Query.each (Query.has [ classes [ "container" ] ])
                 ]
-            , describe "finds children"
+            , describe "finds single descendants"
+                [ test "with index" <|
+                    \() ->
+                        output
+                            |> Query.find [ tag "li", index 2 ]
+                            |> Query.has [ class "selected " ]
+                ]
+            , describe "finds multiple descendants"
                 [ test "with tag selectors that return one match at the start" <|
                     \() ->
                         output
