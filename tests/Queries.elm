@@ -2,10 +2,9 @@ module Queries exposing (..)
 
 import Html exposing (Html, div, ul, li, header, footer, a, section)
 import Html.Attributes as Attr exposing (href)
-import Test.Html.Query as Query
+import Test.Html.Query as Query exposing (Single)
 import Test.Html.Selector exposing (..)
 import Test exposing (..)
-import Fuzz exposing (..)
 import Expect
 
 
@@ -15,126 +14,175 @@ all =
         [ testFindAll
         , testFind
         , testRoot
+        , testFirst
+        , testIndex
+        , testChildren
         ]
 
 
 testRoot : Test
 testRoot =
-    let
-        output =
-            Query.fromHtml sampleHtml
-    in
-        describe "root query without find or findAll"
-            [ describe "finds itself" <|
-                [ test "sees it's a <section class='root'>" <|
-                    \() ->
-                        output
-                            |> Expect.all
-                                [ Query.has [ class "root" ]
-                                , Query.has [ tag "section" ]
-                                ]
-                , test "recognizes its exact className" <|
-                    \() ->
-                        output
-                            |> Query.has [ className "root" ]
-                , test "recognizes its class by classes" <|
-                    \() ->
-                        output
-                            |> Query.has [ classes [ "root" ] ]
-                ]
+    describe "root query without find or findAll"
+        [ describe "finds itself" <|
+            [ test "sees it's a <section class='root'>" <|
+                \() ->
+                    output
+                        |> Expect.all
+                            [ Query.has [ class "root" ]
+                            , Query.has [ tag "section" ]
+                            ]
+            , test "recognizes its exact className" <|
+                \() ->
+                    output
+                        |> Query.has [ className "root" ]
+            , test "recognizes its class by classes" <|
+                \() ->
+                    output
+                        |> Query.has [ classes [ "root" ] ]
             ]
+        ]
 
 
 testFind : Test
 testFind =
-    let
-        output =
-            Query.fromHtml sampleHtml
-    in
-        describe "Query.find []"
-            [ describe "finds the one child" <|
-                [ test "sees it's a <div class='container'>" <|
-                    \() ->
-                        output
-                            |> Query.find []
-                            |> Expect.all
-                                [ Query.has [ class "container" ]
-                                , Query.has [ tag "div" ]
-                                ]
-                , test "recognizes its exact className" <|
-                    \() ->
-                        output
-                            |> Query.find []
-                            |> Query.has [ className "container" ]
-                , test "recognizes its class by classes" <|
-                    \() ->
-                        output
-                            |> Query.find []
-                            |> Query.has [ classes [ "container" ] ]
-                ]
+    describe "Query.find []"
+        [ describe "finds the one child" <|
+            [ test "sees it's a <div class='container'>" <|
+                \() ->
+                    output
+                        |> Query.find []
+                        |> Expect.all
+                            [ Query.has [ class "container" ]
+                            , Query.has [ tag "div" ]
+                            ]
+            , test "recognizes its exact className" <|
+                \() ->
+                    output
+                        |> Query.find []
+                        |> Query.has [ className "container" ]
+            , test "recognizes its class by classes" <|
+                \() ->
+                    output
+                        |> Query.find []
+                        |> Query.has [ classes [ "container" ] ]
             ]
+        ]
 
 
 testFindAll : Test
 testFindAll =
-    let
-        output =
-            Query.fromHtml sampleHtml
-    in
-        describe "Query.findAll []"
-            [ describe "finds the one child" <|
-                [ test "and only the one child" <|
-                    \() ->
-                        output
-                            |> Query.findAll []
-                            |> Query.count (Expect.equal 1)
-                , test "sees it's a <div class='container'>" <|
-                    \() ->
-                        output
-                            |> Query.findAll []
-                            |> Expect.all
-                                [ Query.each (Query.has [ class "container" ])
-                                , Query.each (Query.has [ tag "div" ])
-                                ]
-                , test "recognizes its exact className" <|
-                    \() ->
-                        output
-                            |> Query.findAll []
-                            |> Query.each (Query.has [ className "container" ])
-                , test "recognizes its class by classes" <|
-                    \() ->
-                        output
-                            |> Query.findAll []
-                            |> Query.each (Query.has [ classes [ "container" ] ])
-                ]
-            , describe "fuzzing"
-                [ fuzz (list string) "counting contents of a <ul>" <|
-                    \names ->
-                        names
-                            |> List.map (\name -> li [] [ Html.text name ])
-                            |> Html.ul []
-                            |> Query.fromHtml
-                            |> Query.findAll [ tag "li" ]
-                            |> Query.count (Expect.equal (List.length names))
-                ]
-            , describe "finds multiple descendants"
-                [ test "with tag selectors that return one match at the start" <|
-                    \() ->
-                        output
-                            |> Query.findAll [ tag "header" ]
-                            |> Query.count (Expect.equal 1)
-                , test "with tag selectors that return multiple matches" <|
-                    \() ->
-                        output
-                            |> Query.findAll [ tag "section" ]
-                            |> Query.count (Expect.equal 2)
-                , test "with tag selectors that return one match at the end" <|
-                    \() ->
-                        output
-                            |> Query.findAll [ tag "footer" ]
-                            |> Query.count (Expect.equal 1)
-                ]
+    describe "Query.findAll []"
+        [ describe "finds the one child" <|
+            [ test "and only the one child" <|
+                \() ->
+                    output
+                        |> Query.findAll []
+                        |> Query.count (Expect.equal 1)
+            , test "sees it's a <div class='container'>" <|
+                \() ->
+                    output
+                        |> Query.findAll []
+                        |> Expect.all
+                            [ Query.each (Query.has [ class "container" ])
+                            , Query.each (Query.has [ tag "div" ])
+                            ]
+            , test "recognizes its exact className" <|
+                \() ->
+                    output
+                        |> Query.findAll []
+                        |> Query.each (Query.has [ className "container" ])
+            , test "recognizes its class by classes" <|
+                \() ->
+                    output
+                        |> Query.findAll []
+                        |> Query.each (Query.has [ classes [ "container" ] ])
             ]
+        , describe "finds multiple descendants"
+            [ test "with tag selectors that return one match at the start" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "header" ]
+                        |> Query.count (Expect.equal 1)
+            , test "with tag selectors that return multiple matches" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "section" ]
+                        |> Query.count (Expect.equal 2)
+            , test "with tag selectors that return one match at the end" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "footer" ]
+                        |> Query.count (Expect.equal 1)
+            ]
+        ]
+
+
+testFirst : Test
+testFirst =
+    describe "Query.first"
+        [ describe "finds the one child" <|
+            [ test "sees it's a <div class='container'>" <|
+                \() ->
+                    output
+                        |> Query.findAll []
+                        |> Query.first
+                        |> Query.has [ tag "div", class "container" ]
+            ]
+        ]
+
+
+testIndex : Test
+testIndex =
+    describe "Query.index"
+        [ describe "Query.index 0" <|
+            [ test "sees it's a <div class='container'>" <|
+                \() ->
+                    output
+                        |> Query.findAll []
+                        |> Query.index 0
+                        |> Query.has [ tag "div", class "container" ]
+            ]
+        , describe "Query.index -1" <|
+            [ test "sees it's a <div class='container'>" <|
+                \() ->
+                    output
+                        |> Query.findAll []
+                        |> Query.index -1
+                        |> Query.has [ tag "div", class "container" ]
+            ]
+        ]
+
+
+testChildren : Test
+testChildren =
+    describe "Query.children"
+        [ describe "Query.children" <|
+            [ test "sees the root has one child" <|
+                \() ->
+                    output
+                        |> Query.children
+                        |> Query.count (Expect.equal 1)
+            , test "sees it's a <div class='container'>" <|
+                \() ->
+                    output
+                        |> Query.findAll []
+                        |> Query.index 0
+                        |> Query.has [ tag "div", class "container" ]
+            ]
+        , describe "Query.index -1" <|
+            [ test "sees it's a <div class='container'>" <|
+                \() ->
+                    output
+                        |> Query.findAll []
+                        |> Query.index -1
+                        |> Query.has [ tag "div", class "container" ]
+            ]
+        ]
+
+
+output : Single
+output =
+    Query.fromHtml sampleHtml
 
 
 sampleHtml : Html msg
