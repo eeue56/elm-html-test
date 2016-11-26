@@ -101,11 +101,10 @@ failWithQuery : String -> Internal.Query -> Expectation -> Expectation
 failWithQuery queryName query expectation =
     case Expect.getFailure expectation of
         Just { given, message } ->
-            (Internal.toLines query ++ [ queryName ])
+            (Internal.toLines message query queryName)
                 |> List.map prefixOutputLine
                 |> ((::) (addQueryFromHtmlLine query))
                 |> String.join "\n\n\n"
-                |> (\str -> str ++ "\n\n" ++ message)
                 |> Expect.fail
 
         Nothing ->

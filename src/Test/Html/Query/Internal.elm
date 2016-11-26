@@ -31,9 +31,10 @@ type QueryError
     | MultipleResultsForSingle Int
 
 
-toLines : Query -> List String
-toLines (Query node selectors) =
-    List.map (selectorQueryToString node) (List.reverse selectors)
+toLines : String -> Query -> String -> List String
+toLines expectationFailure (Query node selectors) queryName =
+    toLinesHelp expectationFailure node (List.reverse selectors) queryName []
+        |> List.reverse
 
 
 toOutputLine : Query -> String
@@ -41,23 +42,45 @@ toOutputLine (Query node selectors) =
     htmlPrefix ++ nodeTypeToString (Inert.toElmHtml node)
 
 
-selectorQueryToString : Node -> SelectorQuery -> String
-selectorQueryToString node selectorQuery =
-    let
-        ( str, htmlStr ) =
+toLinesHelp : String -> Node -> List SelectorQuery -> String -> List String -> List String
+toLinesHelp expectationFailure node selectorQueries queryName results =
+    case selectorQueries of
+        [] ->
+            String.join "\n\n" [ queryName, expectationFailure ] :: results
+
+        selectorQuery :: rest ->
             case selectorQuery of
                 FindAll selectors ->
-                    ( "Query.findAll " ++ joinAsList selectorToString selectors
-                    , getHtmlContext (InternalSelector.queryAll selectors [ Inert.toElmHtml node ])
-                    )
+                    let
+                        result =
+                            withHtmlContext
+                                (getHtmlContext (InternalSelector.queryAll selectors [ Inert.toElmHtml node ]))
+                                ("Query.findAll " ++ joinAsList selectorToString selectors)
+                    in
+                        toLinesHelp expectationFailure node rest queryName (result :: results)
 
                 Find selectors ->
-                    ( "Query.find " ++ joinAsList selectorToString selectors
-                    , getHtmlContext (InternalSelector.queryAll selectors [ Inert.toElmHtml node ])
-                    )
-    in
-        String.join "\n\n"
-            [ str, htmlStr ]
+                    let
+                        elements =
+                            InternalSelector.queryAll selectors [ Inert.toElmHtml node ]
+
+                        result =
+                            withHtmlContext
+                                (getHtmlContext elements)
+                                ("Query.find " ++ joinAsList selectorToString selectors)
+                    in
+                        if List.length elements == 1 then
+                            toLinesHelp expectationFailure node rest queryName (result :: results)
+                        else
+                            -- Bail out early so the last error message the user
+                            -- sees is Query.find rather than something like
+                            -- Query.has, to reflect how we didn't make it that far.
+                            String.join "\n\n\n✗ " [ result, expectationFailure ] :: results
+
+
+withHtmlContext : String -> String -> String
+withHtmlContext htmlStr str =
+    String.join "\n\n" [ str, htmlStr ]
 
 
 getHtmlContext : List ElmHtml -> String
@@ -184,14 +207,14 @@ queryErrorToString : Query -> QueryError -> String
 queryErrorToString query error =
     case error of
         NoResultsForSingle ->
-            "Query.find was supposed to find exactly 1 element, but found 0 instead."
+            "Query.find always expects to find 1 element, but it found 0 instead."
 
         MultipleResultsForSingle resultCount ->
-            "Query.find was supposed to find exactly 1 element, but found "
+            "Query.find always expects to find 1 element, but it found "
                 ++ toString resultCount
                 ++ " instead.\n\n\nHINT: If you actually expected "
                 ++ toString resultCount
-                ++ " elements, use Query.findAll with Query.each instead of Query.find."
+                ++ " elements, use Query.findAll instead of Query.find."
 
 
 has : List Selector -> Query -> Expectation
