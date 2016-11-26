@@ -5,6 +5,7 @@ import Html.Attributes as Attr exposing (href)
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (..)
 import Test exposing (..)
+import Fuzz exposing (..)
 import Expect
 
 
@@ -46,6 +47,16 @@ testFindAll =
                         output
                             |> Query.findAll []
                             |> Query.each (Query.has [ classes [ "container" ] ])
+                ]
+            , describe "fuzzing"
+                [ fuzz (list string) "counting contents of a <ul>" <|
+                    \names ->
+                        names
+                            |> List.map (\name -> li [] [ Html.text name ])
+                            |> Html.ul []
+                            |> Query.fromHtml
+                            |> Query.findAll [ tag "li" ]
+                            |> Query.count (Expect.equal (List.length names))
                 ]
             , describe "finds multiple descendants"
                 [ test "with tag selectors that return one match at the start" <|
