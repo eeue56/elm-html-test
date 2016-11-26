@@ -20,23 +20,36 @@ import Html.Inert as Inert
 import Expect exposing (Expectation)
 
 
-{-| TODO
+{-| A query that expects to find exactly one element.
+
+Contrast with [`Multiple`](#Multiple).
 -}
 type alias Single =
     Internal.Single
 
 
-{-| TODO
+{-| A query that may find any number of elements, including zero.
+
+Contrast with [`Single`](#Single).
 -}
 type alias Multiple =
     Internal.Multiple
 
 
+{-| Translate a `Html` value into a `Single` query. This is how queries
+typically begin.
 
--- STARTERS --
+    import Html
+    import Query
+    import Test exposing (test)
+    import Test.Html.Selector exposing (text)
 
 
-{-| TODO
+    test "Button has the expected text" <|
+        \() ->
+            Html.button [] [ Html.text "I'm a button!" ]
+                |> Query.fromHtml
+                |> Query.has [ text "I'm a button!" ]
 -}
 fromHtml : Html msg -> Single
 fromHtml html =
@@ -45,10 +58,29 @@ fromHtml html =
 
 
 
--- SELECTORS --
+-- TRAVERSAL --
 
 
-{-| TODO
+{-| Find the descendant elements which match all of the given selectors.
+
+    import Html exposing (div, ul, li, tag)
+    import Query
+    import Test exposing (test)
+    import Test.Html.Selector exposing (tag)
+
+
+    test "The list has three items" <|
+        \() ->
+            div []
+                [ ul []
+                    [ li [] [ text "first item" ]
+                    , li [] [ text "second item" ]
+                    , li [] [ text "third item" ]
+                    ]
+                ]
+                |> Query.fromHtml
+                |> Query.findAll [ tag "li" ]
+                |> Query.count (Expect.equal 3)
 -}
 findAll : List Selector -> Single -> Multiple
 findAll selectors (Internal.Single query) =
