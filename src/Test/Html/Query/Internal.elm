@@ -17,6 +17,7 @@ type Query
 type SelectorQuery
     = Find (List Selector)
     | FindAll (List Selector)
+      -- First and Index are separate so we can report Query.first in error messages
     | First
     | Index Int
 
