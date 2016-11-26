@@ -68,6 +68,7 @@ fromHtml html =
     import Query
     import Test exposing (test)
     import Test.Html.Selector exposing (tag)
+    import Expect
 
 
     test "The list has three items" <|
@@ -123,6 +124,8 @@ find selectors (Internal.Single query) =
 {-| Return the first element in a match. If there were no matches, the test
 will fail.
 
+`Query.first` is a shorthand for `Query.index 0` - they do the same thing.
+
     import Html exposing (div, ul, li)
     import Html.Attributes exposing (class)
     import Query
@@ -130,7 +133,7 @@ will fail.
     import Test.Html.Selector exposing (tag, classes)
 
 
-    test "The list has both the classes 'items' and 'active'" <|
+    test "The first <li> is called 'first item'" <|
         \() ->
             div []
                 [ ul [ class "items active" ]
@@ -164,7 +167,7 @@ If the index falls outside the bounds of the match, the test will fail.
     import Test.Html.Selector exposing (tag, classes)
 
 
-    test "The list has both the classes 'items' and 'active'" <|
+    test "The second <li> is called 'second item'" <|
         \() ->
             div []
                 [ ul [ class "items active" ]
