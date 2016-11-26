@@ -13,7 +13,38 @@ all : Test
 all =
     Test.concat
         [ testFindAll
+        , testFind
         ]
+
+
+testFind : Test
+testFind =
+    let
+        output =
+            Query.fromHtml sampleHtml
+    in
+        describe "Query.find"
+            [ describe "finds itself" <|
+                [ test "sees it's a <div class='container'>" <|
+                    \() ->
+                        output
+                            |> Query.find []
+                            |> Expect.all
+                                [ Query.has [ class "container" ]
+                                , Query.has [ tag "div" ]
+                                ]
+                , test "recognizes its exact className" <|
+                    \() ->
+                        output
+                            |> Query.find []
+                            |> Query.has [ className "container" ]
+                , test "recognizes its class by classes" <|
+                    \() ->
+                        output
+                            |> Query.find []
+                            |> Query.has [ classes [ "container" ] ]
+                ]
+            ]
 
 
 testFindAll : Test
@@ -29,7 +60,7 @@ testFindAll =
                         output
                             |> Query.findAll []
                             |> Query.count (Expect.equal 1)
-                , test "recognizes its class in conjunction with all" <|
+                , test "sees it's a <div class='container'>" <|
                     \() ->
                         output
                             |> Query.findAll []
@@ -40,8 +71,8 @@ testFindAll =
                 , test "recognizes its exact className" <|
                     \() ->
                         output
-                            |> Query.find []
-                            |> Query.has [ className "container" ]
+                            |> Query.findAll []
+                            |> Query.each (Query.has [ className "container" ])
                 , test "recognizes its class by classes" <|
                     \() ->
                         output
