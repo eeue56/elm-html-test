@@ -1,4 +1,4 @@
-module Test.Html.Query exposing (Single, Multiple, fromHtml, find, findAll, count, has, each)
+module Test.Html.Query exposing (Single, Multiple, fromHtml, find, findAll, first, index, count, has, each)
 
 {-|
 
@@ -6,7 +6,7 @@ module Test.Html.Query exposing (Single, Multiple, fromHtml, find, findAll, coun
 
 ## Querying
 
-@docs find, findAll
+@docs find, findAll, first, index
 
 ## Expecting
 
@@ -116,6 +116,71 @@ If no descendants match, or if more than one matches, the test will fail.
 find : List Selector -> Single -> Single
 find selectors (Internal.Single query) =
     Internal.Find selectors
+        |> Internal.prependSelector query
+        |> Internal.Single
+
+
+{-| Return the first element in a match. If there were no matches, the test
+will fail.
+
+    import Html exposing (div, ul, li)
+    import Html.Attributes exposing (class)
+    import Query
+    import Test exposing (test)
+    import Test.Html.Selector exposing (tag, classes)
+
+
+    test "The list has both the classes 'items' and 'active'" <|
+        \() ->
+            div []
+                [ ul [ class "items active" ]
+                    [ li [] [ text "first item" ]
+                    , li [] [ text "second item" ]
+                    , li [] [ text "third item" ]
+                    ]
+                ]
+                |> Query.fromHtml
+                |> Query.findAll [ tag "li" ]
+                |> Query.first
+                |> Query.has [ text "first item" ]
+-}
+first : Multiple -> Single
+first (Internal.Multiple query) =
+    Internal.First
+        |> Internal.prependSelector query
+        |> Internal.Single
+
+
+{-| Return the element in a match at the given index. For example,
+`Query.index 0` would match the first element, and `Query.index 1` would match
+the second element.
+
+If the index falls outside the bounds of the match, the test will fail.
+
+    import Html exposing (div, ul, li)
+    import Html.Attributes exposing (class)
+    import Query
+    import Test exposing (test)
+    import Test.Html.Selector exposing (tag, classes)
+
+
+    test "The list has both the classes 'items' and 'active'" <|
+        \() ->
+            div []
+                [ ul [ class "items active" ]
+                    [ li [] [ text "first item" ]
+                    , li [] [ text "second item" ]
+                    , li [] [ text "third item" ]
+                    ]
+                ]
+                |> Query.fromHtml
+                |> Query.findAll [ tag "li" ]
+                |> Query.index 1
+                |> Query.has [ text "second item" ]
+-}
+index : Int -> Multiple -> Single
+index position (Internal.Multiple query) =
+    Internal.Index position
         |> Internal.prependSelector query
         |> Internal.Single
 

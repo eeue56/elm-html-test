@@ -5,6 +5,7 @@ import Html.Inert as Inert exposing (Node)
 import ElmHtml.InternalTypes exposing (ElmHtml(..))
 import ElmHtml.ToString exposing (nodeTypeToString)
 import Expect exposing (Expectation)
+import Array
 
 
 {-| Note: the selectors are stored in reverse order for better prepending perf.
@@ -16,6 +17,8 @@ type Query
 type SelectorQuery
     = Find (List Selector)
     | FindAll (List Selector)
+    | First
+    | Index Int
 
 
 type Single
@@ -44,38 +47,89 @@ toOutputLine (Query node selectors) =
 
 toLinesHelp : String -> Node -> List SelectorQuery -> String -> List String -> List String
 toLinesHelp expectationFailure node selectorQueries queryName results =
-    case selectorQueries of
-        [] ->
-            String.join "\n\n" [ queryName, expectationFailure ] :: results
+    let
+        bailOut result =
+            -- Bail out early so the last error message the user
+            -- sees is Query.find rather than something like
+            -- Query.has, to reflect how we didn't make it that far.
+            String.join "\n\n\n✗ " [ result, expectationFailure ] :: results
 
-        selectorQuery :: rest ->
-            case selectorQuery of
-                FindAll selectors ->
-                    let
-                        result =
-                            withHtmlContext
-                                (getHtmlContext (InternalSelector.queryAll selectors [ Inert.toElmHtml node ]))
-                                ("Query.findAll " ++ joinAsList selectorToString selectors)
-                    in
-                        toLinesHelp expectationFailure node rest queryName (result :: results)
+        recurse rest result =
+            toLinesHelp expectationFailure node rest queryName (result :: results)
+    in
+        case selectorQueries of
+            [] ->
+                String.join "\n\n" [ queryName, expectationFailure ] :: results
 
-                Find selectors ->
-                    let
-                        elements =
-                            InternalSelector.queryAll selectors [ Inert.toElmHtml node ]
+            selectorQuery :: rest ->
+                case selectorQuery of
+                    FindAll selectors ->
+                        let
+                            elements =
+                                node
+                                    |> Inert.toElmHtml
+                                    |> getChildren
+                                    |> InternalSelector.queryAll selectors
+                        in
+                            ("Query.findAll " ++ joinAsList selectorToString selectors)
+                                |> withHtmlContext (getHtmlContext elements)
+                                |> recurse rest
 
-                        result =
-                            withHtmlContext
-                                (getHtmlContext elements)
+                    Find selectors ->
+                        let
+                            elements =
+                                node
+                                    |> Inert.toElmHtml
+                                    |> getChildren
+                                    |> InternalSelector.queryAll selectors
+
+                            result =
                                 ("Query.find " ++ joinAsList selectorToString selectors)
-                    in
-                        if List.length elements == 1 then
-                            toLinesHelp expectationFailure node rest queryName (result :: results)
-                        else
-                            -- Bail out early so the last error message the user
-                            -- sees is Query.find rather than something like
-                            -- Query.has, to reflect how we didn't make it that far.
-                            String.join "\n\n\n✗ " [ result, expectationFailure ] :: results
+                                    |> withHtmlContext (getHtmlContext elements)
+                        in
+                            if List.length elements == 1 then
+                                recurse rest result
+                            else
+                                bailOut result
+
+                    First ->
+                        let
+                            elements =
+                                node
+                                    |> Inert.toElmHtml
+                                    |> getChildren
+                                    |> List.head
+                                    |> Maybe.map (\elem -> [ elem ])
+                                    |> Maybe.withDefault []
+
+                            result =
+                                "Query.first"
+                                    |> withHtmlContext (getHtmlContext elements)
+                        in
+                            if List.length elements == 1 then
+                                recurse rest result
+                            else
+                                bailOut result
+
+                    Index index ->
+                        let
+                            elements =
+                                node
+                                    |> Inert.toElmHtml
+                                    |> getChildren
+                                    |> Array.fromList
+                                    |> Array.get index
+                                    |> Maybe.map (\elem -> [ elem ])
+                                    |> Maybe.withDefault []
+
+                            result =
+                                ("Query.index " ++ toString index)
+                                    |> withHtmlContext (getHtmlContext elements)
+                        in
+                            if List.length elements == 1 then
+                                recurse rest result
+                            else
+                                bailOut result
 
 
 withHtmlContext : String -> String -> String
@@ -143,6 +197,21 @@ traverseSelector selectorQuery elmHtmlList =
                 |> List.concatMap getChildren
                 |> InternalSelector.queryAll selectors
                 |> Ok
+
+        First ->
+            elmHtmlList
+                |> List.concatMap getChildren
+                |> List.head
+                |> Maybe.map (\elem -> Ok [ elem ])
+                |> Maybe.withDefault (Err NoResultsForSingle)
+
+        Index index ->
+            elmHtmlList
+                |> List.concatMap getChildren
+                |> Array.fromList
+                |> Array.get index
+                |> Maybe.map (\elem -> Ok [ elem ])
+                |> Maybe.withDefault (Err NoResultsForSingle)
 
 
 getChildren : ElmHtml -> List ElmHtml
