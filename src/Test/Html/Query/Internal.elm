@@ -100,7 +100,7 @@ toLinesHelp expectationFailure elmHtmlList selectorQueries queryName results =
                         let
                             elements =
                                 elmHtmlList
-                                    |> List.concatMap getChildren
+                                    |> List.concatMap (getChildren >> List.filter isElement)
                         in
                             "Query.children"
                                 |> withHtmlContext (getHtmlContext elements)
@@ -243,7 +243,7 @@ traverseSelector selectorQuery elmHtmlList =
 
         Children ->
             elmHtmlList
-                |> List.concatMap getChildren
+                |> List.concatMap (getChildren >> List.filter isElement)
                 |> Ok
 
         First ->
