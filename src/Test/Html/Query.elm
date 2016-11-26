@@ -61,9 +61,10 @@ fromHtml html =
 -- TRAVERSAL --
 
 
-{-| Find the descendant elements which match all of the given selectors.
+{-| Find the descendant elements which match all the given selectors.
 
-    import Html exposing (div, ul, li, tag)
+    import Html exposing (div, ul, li)
+    import Html.Attributes exposing (class)
     import Query
     import Test exposing (test)
     import Test.Html.Selector exposing (tag)
@@ -72,7 +73,7 @@ fromHtml html =
     test "The list has three items" <|
         \() ->
             div []
-                [ ul []
+                [ ul [ class "items active" ]
                     [ li [] [ text "first item" ]
                     , li [] [ text "second item" ]
                     , li [] [ text "third item" ]
@@ -89,7 +90,28 @@ findAll selectors (Internal.Single query) =
         |> Internal.Multiple
 
 
-{-| TODO
+{-| Find exactly one descendant element which matches all the given selectors.
+If no descendants match, or if more than one matches, the test will fail.
+
+    import Html exposing (div, ul, li)
+    import Html.Attributes exposing (class)
+    import Query
+    import Test exposing (test)
+    import Test.Html.Selector exposing (tag, classes)
+
+
+    test "The list has both the classes 'items' and 'active'" <|
+        \() ->
+            div []
+                [ ul [ class "items active" ]
+                    [ li [] [ text "first item" ]
+                    , li [] [ text "second item" ]
+                    , li [] [ text "third item" ]
+                    ]
+                ]
+                |> Query.fromHtml
+                |> Query.find [ tag "ul" ]
+                |> Query.has [ classes [ "items", "active" ] ]
 -}
 find : List Selector -> Single -> Single
 find selectors (Internal.Single query) =
@@ -102,7 +124,27 @@ find selectors (Internal.Single query) =
 -- EXPECTATIONS --
 
 
-{-| TODO
+{-| Expect the number of elements matching the query fits the given expectation.
+
+    import Html exposing (div, ul, li)
+    import Html.Attributes exposing (class)
+    import Query
+    import Test exposing (test)
+    import Test.Html.Selector exposing (tag)
+
+
+    test "The list has three items" <|
+        \() ->
+            div []
+                [ ul [ class "items active" ]
+                    [ li [] [ text "first item" ]
+                    , li [] [ text "second item" ]
+                    , li [] [ text "third item" ]
+                    ]
+                ]
+                |> Query.fromHtml
+                |> Query.findAll [ tag "li" ]
+                |> Query.count (Expect.equal 3)
 -}
 count : (Int -> Expectation) -> Multiple -> Expectation
 count expect ((Internal.Multiple query) as multiple) =
@@ -110,7 +152,27 @@ count expect ((Internal.Multiple query) as multiple) =
         |> Internal.multipleToExpectation multiple
 
 
-{-| TODO
+{-| Expect the element to match all of the given selectors.
+
+    import Html exposing (div, ul, li)
+    import Html.Attributes exposing (class)
+    import Query
+    import Test exposing (test)
+    import Test.Html.Selector exposing (tag, classes)
+
+
+    test "The list has both the classes 'items' and 'active'" <|
+        \() ->
+            div []
+                [ ul [ class "items active" ]
+                    [ li [] [ text "first item" ]
+                    , li [] [ text "second item" ]
+                    , li [] [ text "third item" ]
+                    ]
+                ]
+                |> Query.fromHtml
+                |> Query.find [ tag "ul" ]
+                |> Query.has [ tag "ul", classes [ "items", "active" ] ]
 -}
 has : List Selector -> Single -> Expectation
 has selectors (Internal.Single query) =
@@ -118,7 +180,31 @@ has selectors (Internal.Single query) =
         |> failWithQuery ("Query.has " ++ Internal.joinAsList selectorToString selectors) query
 
 
-{-| TODO
+{-| Expect that a [`Single`](#Single) expectation will hold true for each of the
+[`Multiple`](#Multiple) matched elements.
+
+    import Html exposing (div, ul, li)
+    import Html.Attributes exposing (class)
+    import Query
+    import Test exposing (test)
+    import Test.Html.Selector exposing (tag, classes)
+
+
+    test "The list has both the classes 'items' and 'active'" <|
+        \() ->
+            div []
+                [ ul [ class "items active" ]
+                    [ li [] [ text "first item" ]
+                    , li [] [ text "second item" ]
+                    , li [] [ text "third item" ]
+                    ]
+                ]
+                |> Query.fromHtml
+                |> Query.findAll [ tag "ul" ]
+                |> Query.each
+                    [ Query.has [ tag "ul" ]
+                    , Query.has [ classes [ "items", "active" ] ]
+                    ]
 -}
 each : (Single -> Expectation) -> Multiple -> Expectation
 each check query =
