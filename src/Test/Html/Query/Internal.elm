@@ -110,7 +110,6 @@ toLinesHelp expectationFailure elmHtmlList selectorQueries queryName results =
                         let
                             elements =
                                 elmHtmlList
-                                    |> List.concatMap getChildren
                                     |> List.head
                                     |> Maybe.map (\elem -> [ elem ])
                                     |> Maybe.withDefault []
@@ -128,7 +127,6 @@ toLinesHelp expectationFailure elmHtmlList selectorQueries queryName results =
                         let
                             elements =
                                 elmHtmlList
-                                    |> List.concatMap getChildren
                                     |> getElementAt index
 
                             result =
@@ -248,7 +246,6 @@ traverseSelector selectorQuery elmHtmlList =
 
         First ->
             elmHtmlList
-                |> List.concatMap getChildren
                 |> List.head
                 |> Maybe.map (\elem -> Ok [ elem ])
                 |> Maybe.withDefault (Err (NoResultsForSingle "Query.first"))
@@ -257,7 +254,6 @@ traverseSelector selectorQuery elmHtmlList =
             let
                 elements =
                     elmHtmlList
-                        |> List.concatMap getChildren
                         |> getElementAt index
             in
                 if List.length elements == 1 then
