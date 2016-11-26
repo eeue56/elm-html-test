@@ -20,6 +20,7 @@ type SelectorQuery
       -- First and Index are separate so we can report Query.first in error messages
     | First
     | Index Int
+    | Children
 
 
 type Single
@@ -92,6 +93,17 @@ toLinesHelp expectationFailure node selectorQueries queryName results =
                                 recurse rest result
                             else
                                 bailOut result
+
+                    Children ->
+                        let
+                            elements =
+                                node
+                                    |> Inert.toElmHtml
+                                    |> getChildren
+                        in
+                            "Query.children"
+                                |> withHtmlContext (getHtmlContext elements)
+                                |> recurse rest
 
                     First ->
                         let
@@ -197,6 +209,11 @@ traverseSelector selectorQuery elmHtmlList =
             elmHtmlList
                 |> List.concatMap getChildren
                 |> InternalSelector.queryAll selectors
+                |> Ok
+
+        Children ->
+            elmHtmlList
+                |> List.concatMap getChildren
                 |> Ok
 
         First ->

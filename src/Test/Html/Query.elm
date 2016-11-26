@@ -1,4 +1,17 @@
-module Test.Html.Query exposing (Single, Multiple, fromHtml, find, findAll, first, index, count, has, each)
+module Test.Html.Query
+    exposing
+        ( Single
+        , Multiple
+        , fromHtml
+        , find
+        , findAll
+        , children
+        , first
+        , index
+        , count
+        , has
+        , each
+        )
 
 {-|
 
@@ -6,7 +19,7 @@ module Test.Html.Query exposing (Single, Multiple, fromHtml, find, findAll, firs
 
 ## Querying
 
-@docs find, findAll, first, index
+@docs find, findAll, children, first, index
 
 ## Expecting
 
@@ -186,6 +199,36 @@ index position (Internal.Multiple query) =
     Internal.Index position
         |> Internal.prependSelector query
         |> Internal.Single
+
+
+{-| Return the matched element's immediate child elements.
+
+    import Html exposing (div, ul, li)
+    import Html.Attributes exposing (class)
+    import Query
+    import Test exposing (test)
+    import Test.Html.Selector exposing (tag, classes)
+
+
+    test "The <ul> only has <li> children" <|
+        \() ->
+            div []
+                [ ul [ class "items active" ]
+                    [ li [] [ text "first item" ]
+                    , li [] [ text "second item" ]
+                    , li [] [ text "third item" ]
+                    ]
+                ]
+                |> Query.fromHtml
+                |> Query.find [ tag "ul" ]
+                |> Query.children
+                |> Query.each (Query.has [ tag "li" ])
+-}
+children : Single -> Multiple
+children (Internal.Single query) =
+    Internal.Children
+        |> Internal.prependSelector query
+        |> Internal.Multiple
 
 
 
