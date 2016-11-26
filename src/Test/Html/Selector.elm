@@ -53,8 +53,8 @@ classes =
 {-| TODO
 -}
 class : String -> Selector
-class name =
-    classes [ name ]
+class =
+    Class
 
 
 {-| TODO
