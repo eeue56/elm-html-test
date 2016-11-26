@@ -308,29 +308,40 @@ expectAll : (Single -> Expectation) -> Query -> Expectation
 expectAll check query =
     case traverse query of
         Ok list ->
-            expectAllHelp check list
+            expectAllHelp 0 check list
 
         Err error ->
             Expect.fail (queryErrorToString query error)
 
 
-expectAllHelp : (Single -> Expectation) -> List ElmHtml -> Expectation
-expectAllHelp check list =
+expectAllHelp : Int -> (Single -> Expectation) -> List ElmHtml -> Expectation
+expectAllHelp successes check list =
     case list of
         [] ->
             Expect.pass
 
         elmHtml :: rest ->
             let
-                outcome =
+                expectation =
                     Query (Inert.fromElmHtml elmHtml) []
                         |> Single False
                         |> check
             in
-                if outcome == Expect.pass then
-                    expectAllHelp check rest
-                else
-                    outcome
+                case Expect.getFailure expectation of
+                    Just { given, message } ->
+                        let
+                            prefix =
+                                if successes > 0 then
+                                    "Element #" ++ (toString (successes + 1)) ++ " failed this test:"
+                                else
+                                    "The first element failed this test:"
+                        in
+                            [ prefix, message ]
+                                |> String.join "\n\n"
+                                |> Expect.fail
+
+                    Nothing ->
+                        expectAllHelp (successes + 1) check rest
 
 
 multipleToExpectation : Multiple -> (List ElmHtml -> Expectation) -> Expectation
