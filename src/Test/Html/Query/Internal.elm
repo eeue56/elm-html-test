@@ -62,9 +62,12 @@ selectorQueryToString node selectorQuery =
 
 getHtmlContext : List ElmHtml -> String
 getHtmlContext elmHtmlList =
-    elmHtmlList
-        |> List.indexedMap (\index elmHtml -> htmlPrefix ++ toString (index + 1) ++ ") " ++ nodeTypeToString elmHtml)
-        |> String.join "\n\n"
+    if List.isEmpty elmHtmlList then
+        "0 matches found for this query."
+    else
+        elmHtmlList
+            |> List.indexedMap (\index elmHtml -> htmlPrefix ++ toString (index + 1) ++ ") " ++ nodeTypeToString elmHtml)
+            |> String.join "\n\n"
 
 
 joinAsList : (a -> String) -> List a -> String
@@ -181,12 +184,14 @@ queryErrorToString : Query -> QueryError -> String
 queryErrorToString query error =
     case error of
         NoResultsForSingle ->
-            -- TODO include what the query was and what the html was at this point
-            "No results found for single query"
+            "Query.find was supposed to find exactly 1 element, but found 0 instead."
 
         MultipleResultsForSingle resultCount ->
-            -- TODO include what the query was and what the html was at this point
-            toString resultCount ++ " results found for single query"
+            "Query.find was supposed to find exactly 1 element, but found "
+                ++ toString resultCount
+                ++ " instead.\n\n\nHINT: If you actually expected "
+                ++ toString resultCount
+                ++ " elements, use Query.findAll with Query.each instead of Query.find."
 
 
 has : List Selector -> Query -> Expectation

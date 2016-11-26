@@ -45,6 +45,18 @@ testView =
                         |> Query.find [ id "heading" ]
                         |> Query.findAll [ tag "a" ]
                         |> Query.count (Expect.equal 4)
+            , test "(this should fail) expect header to have one link in it, even though it has 3" <|
+                \() ->
+                    output
+                        |> Query.find [ id "heading" ]
+                        |> Query.find [ tag "a" ]
+                        |> Query.has [ tag "a" ]
+            , test "(this should fail) expect header to have one <img> in it, even though it has none" <|
+                \() ->
+                    output
+                        |> Query.find [ id "heading" ]
+                        |> Query.find [ tag "img" ]
+                        |> Query.has [ tag "img" ]
             , test "expect footer to have footer text" <|
                 \() ->
                     output

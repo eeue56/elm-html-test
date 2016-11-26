@@ -105,7 +105,7 @@ failWithQuery queryName query expectation =
                 |> List.map prefixOutputLine
                 |> ((::) (addQueryFromHtmlLine query))
                 |> String.join "\n\n\n"
-                |> (\str -> str ++ "\n\n\n" ++ message)
+                |> (\str -> str ++ "\n\n" ++ message)
                 |> Expect.fail
 
         Nothing ->
