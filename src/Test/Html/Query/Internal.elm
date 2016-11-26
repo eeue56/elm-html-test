@@ -31,13 +31,13 @@ type Multiple
 
 
 type QueryError
-    = NoResultsForSingle
-    | MultipleResultsForSingle Int
+    = NoResultsForSingle String
+    | MultipleResultsForSingle String Int
 
 
 toLines : String -> Query -> String -> List String
 toLines expectationFailure (Query node selectors) queryName =
-    toLinesHelp expectationFailure node (List.reverse selectors) queryName []
+    toLinesHelp expectationFailure [ Inert.toElmHtml node ] (List.reverse selectors) queryName []
         |> List.reverse
 
 
@@ -46,8 +46,8 @@ toOutputLine (Query node selectors) =
     htmlPrefix ++ nodeTypeToString (Inert.toElmHtml node)
 
 
-toLinesHelp : String -> Node -> List SelectorQuery -> String -> List String -> List String
-toLinesHelp expectationFailure node selectorQueries queryName results =
+toLinesHelp : String -> List ElmHtml -> List SelectorQuery -> String -> List String -> List String
+toLinesHelp expectationFailure elmHtmlList selectorQueries queryName results =
     let
         bailOut result =
             -- Bail out early so the last error message the user
@@ -55,8 +55,13 @@ toLinesHelp expectationFailure node selectorQueries queryName results =
             -- Query.has, to reflect how we didn't make it that far.
             String.join "\n\n\n✗ " [ result, expectationFailure ] :: results
 
-        recurse rest result =
-            toLinesHelp expectationFailure node rest queryName (result :: results)
+        recurse newElmHtmlList rest result =
+            toLinesHelp
+                expectationFailure
+                newElmHtmlList
+                rest
+                queryName
+                (result :: results)
     in
         case selectorQueries of
             [] ->
@@ -67,21 +72,19 @@ toLinesHelp expectationFailure node selectorQueries queryName results =
                     FindAll selectors ->
                         let
                             elements =
-                                node
-                                    |> Inert.toElmHtml
-                                    |> getChildren
+                                elmHtmlList
+                                    |> List.concatMap getChildren
                                     |> InternalSelector.queryAll selectors
                         in
                             ("Query.findAll " ++ joinAsList selectorToString selectors)
                                 |> withHtmlContext (getHtmlContext elements)
-                                |> recurse rest
+                                |> recurse elements rest
 
                     Find selectors ->
                         let
                             elements =
-                                node
-                                    |> Inert.toElmHtml
-                                    |> getChildren
+                                elmHtmlList
+                                    |> List.concatMap getChildren
                                     |> InternalSelector.queryAll selectors
 
                             result =
@@ -89,27 +92,25 @@ toLinesHelp expectationFailure node selectorQueries queryName results =
                                     |> withHtmlContext (getHtmlContext elements)
                         in
                             if List.length elements == 1 then
-                                recurse rest result
+                                recurse elements rest result
                             else
                                 bailOut result
 
                     Children ->
                         let
                             elements =
-                                node
-                                    |> Inert.toElmHtml
-                                    |> getChildren
+                                elmHtmlList
+                                    |> List.concatMap getChildren
                         in
                             "Query.children"
                                 |> withHtmlContext (getHtmlContext elements)
-                                |> recurse rest
+                                |> recurse elements rest
 
                     First ->
                         let
                             elements =
-                                node
-                                    |> Inert.toElmHtml
-                                    |> getChildren
+                                elmHtmlList
+                                    |> List.concatMap getChildren
                                     |> List.head
                                     |> Maybe.map (\elem -> [ elem ])
                                     |> Maybe.withDefault []
@@ -119,16 +120,15 @@ toLinesHelp expectationFailure node selectorQueries queryName results =
                                     |> withHtmlContext (getHtmlContext elements)
                         in
                             if List.length elements == 1 then
-                                recurse rest result
+                                recurse elements rest result
                             else
                                 bailOut result
 
                     Index index ->
                         let
                             elements =
-                                node
-                                    |> Inert.toElmHtml
-                                    |> getChildren
+                                elmHtmlList
+                                    |> List.concatMap getChildren
                                     |> getElementAt index
 
                             result =
@@ -136,7 +136,7 @@ toLinesHelp expectationFailure node selectorQueries queryName results =
                                     |> withHtmlContext (getHtmlContext elements)
                         in
                             if List.length elements == 1 then
-                                recurse rest result
+                                recurse elements rest result
                             else
                                 bailOut result
 
@@ -232,7 +232,7 @@ traverseSelector selectorQuery elmHtmlList =
             elmHtmlList
                 |> List.concatMap getChildren
                 |> InternalSelector.queryAll selectors
-                |> verifySingle
+                |> verifySingle "Query.find"
                 |> Result.map (\elem -> [ elem ])
 
         FindAll selectors ->
@@ -251,7 +251,7 @@ traverseSelector selectorQuery elmHtmlList =
                 |> List.concatMap getChildren
                 |> List.head
                 |> Maybe.map (\elem -> Ok [ elem ])
-                |> Maybe.withDefault (Err NoResultsForSingle)
+                |> Maybe.withDefault (Err (NoResultsForSingle "Query.first"))
 
         Index index ->
             let
@@ -263,7 +263,7 @@ traverseSelector selectorQuery elmHtmlList =
                 if List.length elements == 1 then
                     Ok elements
                 else
-                    Err NoResultsForSingle
+                    Err (NoResultsForSingle ("Query.index " ++ toString index))
 
 
 getChildren : ElmHtml -> List ElmHtml
@@ -276,17 +276,27 @@ getChildren elmHtml =
             []
 
 
-verifySingle : List a -> Result QueryError a
-verifySingle list =
+isElement : ElmHtml -> Bool
+isElement elmHtml =
+    case elmHtml of
+        NodeEntry _ ->
+            True
+
+        _ ->
+            False
+
+
+verifySingle : String -> List a -> Result QueryError a
+verifySingle queryName list =
     case list of
         [] ->
-            Err NoResultsForSingle
+            Err (NoResultsForSingle queryName)
 
         singleton :: [] ->
             Ok singleton
 
         multiples ->
-            Err (MultipleResultsForSingle (List.length multiples))
+            Err (MultipleResultsForSingle queryName (List.length multiples))
 
 
 expectAll : (Single -> Expectation) -> Multiple -> Expectation
@@ -341,11 +351,12 @@ singleToExpectation (Single query) check =
 queryErrorToString : Query -> QueryError -> String
 queryErrorToString query error =
     case error of
-        NoResultsForSingle ->
-            "Query.find always expects to find 1 element, but it found 0 instead."
+        NoResultsForSingle queryName ->
+            queryName ++ " always expects to find 1 element, but it found 0 instead."
 
-        MultipleResultsForSingle resultCount ->
-            "Query.find always expects to find 1 element, but it found "
+        MultipleResultsForSingle queryName resultCount ->
+            queryName
+                ++ " always expects to find 1 element, but it found "
                 ++ toString resultCount
                 ++ " instead.\n\n\nHINT: If you actually expected "
                 ++ toString resultCount
