@@ -8,12 +8,14 @@ import Test exposing (..)
 import Expect
 
 
+all : Test
 all =
     Test.concat
         [ testFindAll
         ]
 
 
+testFindAll : Test
 testFindAll =
     let
         output =
