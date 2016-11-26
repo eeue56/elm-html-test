@@ -156,26 +156,17 @@ testIndex =
 testChildren : Test
 testChildren =
     describe "Query.children"
-        [ describe "Query.children" <|
+        [ describe "on the root" <|
             [ test "sees the root has one child" <|
                 \() ->
                     output
                         |> Query.children
                         |> Query.count (Expect.equal 1)
-            , test "sees it's a <div class='container'>" <|
+            , test "sees it's a <header id='heading'>" <|
                 \() ->
                     output
-                        |> Query.findAll []
-                        |> Query.index 0
-                        |> Query.has [ tag "div", class "container" ]
-            ]
-        , describe "Query.index -1" <|
-            [ test "sees it's a <div class='container'>" <|
-                \() ->
-                    output
-                        |> Query.findAll []
-                        |> Query.index -1
-                        |> Query.has [ tag "div", class "container" ]
+                        |> Query.children
+                        |> Query.each (Query.has [ tag "header", id "heading" ])
             ]
         ]
 

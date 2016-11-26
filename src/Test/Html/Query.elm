@@ -67,7 +67,7 @@ typically begin.
 fromHtml : Html msg -> Single
 fromHtml html =
     Internal.Query (Inert.fromHtml html) []
-        |> Internal.Single
+        |> Internal.Single True
 
 
 
@@ -98,10 +98,10 @@ fromHtml html =
                 |> Query.count (Expect.equal 3)
 -}
 findAll : List Selector -> Single -> Multiple
-findAll selectors (Internal.Single query) =
+findAll selectors (Internal.Single showTrace query) =
     Internal.FindAll selectors
         |> Internal.prependSelector query
-        |> Internal.Multiple
+        |> Internal.Multiple showTrace
 
 
 {-| Find exactly one descendant element which matches all the given selectors.
@@ -128,10 +128,10 @@ If no descendants match, or if more than one matches, the test will fail.
                 |> Query.has [ classes [ "items", "active" ] ]
 -}
 find : List Selector -> Single -> Single
-find selectors (Internal.Single query) =
+find selectors (Internal.Single showTrace query) =
     Internal.Find selectors
         |> Internal.prependSelector query
-        |> Internal.Single
+        |> Internal.Single showTrace
 
 
 {-| Return the first element in a match. If there were no matches, the test
@@ -161,10 +161,10 @@ will fail.
                 |> Query.has [ text "first item" ]
 -}
 first : Multiple -> Single
-first (Internal.Multiple query) =
+first (Internal.Multiple showTrace query) =
     Internal.First
         |> Internal.prependSelector query
-        |> Internal.Single
+        |> Internal.Single showTrace
 
 
 {-| Return the element in a match at the given index. For example,
@@ -198,10 +198,10 @@ If the index falls outside the bounds of the match, the test will fail.
                 |> Query.has [ text "second item" ]
 -}
 index : Int -> Multiple -> Single
-index position (Internal.Multiple query) =
+index position (Internal.Multiple showTrace query) =
     Internal.Index position
         |> Internal.prependSelector query
-        |> Internal.Single
+        |> Internal.Single showTrace
 
 
 {-| Return the matched element's immediate child elements.
@@ -228,10 +228,10 @@ index position (Internal.Multiple query) =
                 |> Query.each (Query.has [ tag "li" ])
 -}
 children : Single -> Multiple
-children (Internal.Single query) =
+children (Internal.Single showTrace query) =
     Internal.Children
         |> Internal.prependSelector query
-        |> Internal.Multiple
+        |> Internal.Multiple showTrace
 
 
 
@@ -261,8 +261,8 @@ children (Internal.Single query) =
                 |> Query.count (Expect.equal 3)
 -}
 count : (Int -> Expectation) -> Multiple -> Expectation
-count expect ((Internal.Multiple query) as multiple) =
-    (List.length >> expect >> failWithQuery "Query.count" query)
+count expect ((Internal.Multiple showTrace query) as multiple) =
+    (List.length >> expect >> failWithQuery showTrace "Query.count" query)
         |> Internal.multipleToExpectation multiple
 
 
@@ -289,9 +289,9 @@ count expect ((Internal.Multiple query) as multiple) =
                 |> Query.has [ tag "ul", classes [ "items", "active" ] ]
 -}
 has : List Selector -> Single -> Expectation
-has selectors (Internal.Single query) =
+has selectors (Internal.Single showTrace query) =
     Internal.has selectors query
-        |> failWithQuery ("Query.has " ++ Internal.joinAsList selectorToString selectors) query
+        |> failWithQuery showTrace ("Query.has " ++ Internal.joinAsList selectorToString selectors) query
 
 
 {-| Expect that a [`Single`](#Single) expectation will hold true for each of the
@@ -321,23 +321,33 @@ has selectors (Internal.Single query) =
                     ]
 -}
 each : (Single -> Expectation) -> Multiple -> Expectation
-each check query =
+each check (Internal.Multiple showTrace query) =
     Internal.expectAll check query
+        |> failWithQuery showTrace "Query.each" query
 
 
 
 -- HELPERS --
 
 
-failWithQuery : String -> Internal.Query -> Expectation -> Expectation
-failWithQuery queryName query expectation =
+failWithQuery : Bool -> String -> Internal.Query -> Expectation -> Expectation
+failWithQuery showTrace queryName query expectation =
     case Expect.getFailure expectation of
         Just { given, message } ->
-            (Internal.toLines message query queryName)
-                |> List.map prefixOutputLine
-                |> ((::) (addQueryFromHtmlLine query))
-                |> String.join "\n\n\n"
-                |> Expect.fail
+            let
+                lines =
+                    Internal.toLines message query queryName
+                        |> List.map prefixOutputLine
+
+                tracedLines =
+                    if showTrace then
+                        addQueryFromHtmlLine query :: lines
+                    else
+                        lines
+            in
+                tracedLines
+                    |> String.join "\n\n\n"
+                    |> Expect.fail
 
         Nothing ->
             expectation

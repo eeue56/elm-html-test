@@ -22,12 +22,21 @@ type SelectorQuery
     | Children
 
 
+{-| The Bool is `showTrace` - whether to show the Query.fromHtml trace at
+the beginning of the error message.
+
+We need to track this so that Query.each can turn it off. Otherwise you get
+fromHtml printed twice - once at the very top, then again for the nested
+expectation that Query.each delegated to.
+-}
 type Single
-    = Single Query
+    = Single Bool Query
 
 
+{-| The Bool is `showTrace` - see `Single` for more info.
+-}
 type Multiple
-    = Multiple Query
+    = Multiple Bool Query
 
 
 type QueryError
@@ -295,8 +304,8 @@ verifySingle queryName list =
             Err (MultipleResultsForSingle queryName (List.length multiples))
 
 
-expectAll : (Single -> Expectation) -> Multiple -> Expectation
-expectAll check (Multiple query) =
+expectAll : (Single -> Expectation) -> Query -> Expectation
+expectAll check query =
     case traverse query of
         Ok list ->
             expectAllHelp check list
@@ -315,7 +324,7 @@ expectAllHelp check list =
             let
                 outcome =
                     Query (Inert.fromElmHtml elmHtml) []
-                        |> Single
+                        |> Single False
                         |> check
             in
                 if outcome == Expect.pass then
@@ -325,7 +334,7 @@ expectAllHelp check list =
 
 
 multipleToExpectation : Multiple -> (List ElmHtml -> Expectation) -> Expectation
-multipleToExpectation (Multiple query) check =
+multipleToExpectation (Multiple _ query) check =
     case traverse query of
         Ok list ->
             check list
