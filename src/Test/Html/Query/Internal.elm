@@ -338,16 +338,6 @@ multipleToExpectation (Multiple query) check =
             Expect.fail (queryErrorToString query error)
 
 
-singleToExpectation : Single -> (ElmHtml -> Expectation) -> Expectation
-singleToExpectation (Single query) check =
-    case Result.andThen verifySingle (traverse query) of
-        Ok elem ->
-            check elem
-
-        Err error ->
-            Expect.fail (queryErrorToString query error)
-
-
 queryErrorToString : Query -> QueryError -> String
 queryErrorToString query error =
     case error of
