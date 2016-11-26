@@ -14,7 +14,35 @@ all =
     Test.concat
         [ testFindAll
         , testFind
+        , testRoot
         ]
+
+
+testRoot : Test
+testRoot =
+    let
+        output =
+            Query.fromHtml sampleHtml
+    in
+        describe "root query without find or findAll"
+            [ describe "finds itself" <|
+                [ test "sees it's a <section class='root'>" <|
+                    \() ->
+                        output
+                            |> Expect.all
+                                [ Query.has [ class "root" ]
+                                , Query.has [ tag "section" ]
+                                ]
+                , test "recognizes its exact className" <|
+                    \() ->
+                        output
+                            |> Query.has [ className "root" ]
+                , test "recognizes its class by classes" <|
+                    \() ->
+                        output
+                            |> Query.has [ classes [ "root" ] ]
+                ]
+            ]
 
 
 testFind : Test
@@ -23,8 +51,8 @@ testFind =
         output =
             Query.fromHtml sampleHtml
     in
-        describe "Query.find"
-            [ describe "finds itself" <|
+        describe "Query.find []"
+            [ describe "finds the one child" <|
                 [ test "sees it's a <div class='container'>" <|
                     \() ->
                         output
@@ -53,9 +81,9 @@ testFindAll =
         output =
             Query.fromHtml sampleHtml
     in
-        describe "Query.findAll"
-            [ describe "finds itself" <|
-                [ test "and only itself" <|
+        describe "Query.findAll []"
+            [ describe "finds the one child" <|
+                [ test "and only the one child" <|
                     \() ->
                         output
                             |> Query.findAll []
@@ -111,20 +139,22 @@ testFindAll =
 
 sampleHtml : Html msg
 sampleHtml =
-    div [ Attr.class "container" ]
-        [ header [ Attr.class "funky themed", Attr.id "heading" ]
-            [ a [ href "http://elm-lang.org" ] [ Html.text "home" ]
-            , a [ href "http://elm-lang.org/examples" ] [ Html.text "examples" ]
-            , a [ href "http://elm-lang.org/docs" ] [ Html.text "docs" ]
-            ]
-        , section [ Attr.class "funky themed", Attr.id "section" ]
-            [ ul [ Attr.class "some-list" ]
-                [ li [ Attr.class "list-item themed" ] [ Html.text "first item" ]
-                , li [ Attr.class "list-item themed" ] [ Html.text "second item" ]
-                , li [ Attr.class "list-item themed selected" ] [ Html.text "third item" ]
-                , li [ Attr.class "list-item themed" ] [ Html.text "fourth item" ]
+    section [ Attr.class "root" ]
+        [ div [ Attr.class "container" ]
+            [ header [ Attr.class "funky themed", Attr.id "heading" ]
+                [ a [ href "http://elm-lang.org" ] [ Html.text "home" ]
+                , a [ href "http://elm-lang.org/examples" ] [ Html.text "examples" ]
+                , a [ href "http://elm-lang.org/docs" ] [ Html.text "docs" ]
                 ]
+            , section [ Attr.class "funky themed", Attr.id "section" ]
+                [ ul [ Attr.class "some-list" ]
+                    [ li [ Attr.class "list-item themed" ] [ Html.text "first item" ]
+                    , li [ Attr.class "list-item themed" ] [ Html.text "second item" ]
+                    , li [ Attr.class "list-item themed selected" ] [ Html.text "third item" ]
+                    , li [ Attr.class "list-item themed" ] [ Html.text "fourth item" ]
+                    ]
+                ]
+            , section [] [ Html.text "boring section" ]
+            , footer [] [ Html.text "this is the footer" ]
             ]
-        , section [] [ Html.text "boring section" ]
-        , footer [] [ Html.text "this is the footer" ]
         ]

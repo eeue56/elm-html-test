@@ -2,7 +2,7 @@ module Test.Html.Query.Internal exposing (..)
 
 import Test.Html.Selector.Internal as InternalSelector exposing (Selector, selectorToString)
 import Html.Inert as Inert exposing (Node)
-import ElmHtml.InternalTypes exposing (ElmHtml)
+import ElmHtml.InternalTypes exposing (ElmHtml(..))
 import ElmHtml.ToString exposing (nodeTypeToString)
 import Expect exposing (Expectation)
 
@@ -129,16 +129,30 @@ traverseSelectors selectorQueries elmHtmlList =
 
 
 traverseSelector : SelectorQuery -> List ElmHtml -> Result QueryError (List ElmHtml)
-traverseSelector selectorQuery elmHtml =
+traverseSelector selectorQuery elmHtmlList =
     case selectorQuery of
         Find selectors ->
-            InternalSelector.queryAll selectors elmHtml
+            elmHtmlList
+                |> List.concatMap getChildren
+                |> InternalSelector.queryAll selectors
                 |> verifySingle
                 |> Result.map (\elem -> [ elem ])
 
         FindAll selectors ->
-            InternalSelector.queryAll selectors elmHtml
+            elmHtmlList
+                |> List.concatMap getChildren
+                |> InternalSelector.queryAll selectors
                 |> Ok
+
+
+getChildren : ElmHtml -> List ElmHtml
+getChildren elmHtml =
+    case elmHtml of
+        NodeEntry { children } ->
+            children
+
+        _ ->
+            []
 
 
 verifySingle : List a -> Result QueryError a
