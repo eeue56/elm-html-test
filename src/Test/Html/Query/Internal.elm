@@ -16,10 +16,10 @@ type Query
 type SelectorQuery
     = Find (List Selector)
     | FindAll (List Selector)
+    | Children (List Selector)
       -- First and Index are separate so we can report Query.first in error messages
     | First
     | Index Int
-    | Children
 
 
 {-| The Bool is `showTrace` - whether to show the Query.fromHtml trace at
