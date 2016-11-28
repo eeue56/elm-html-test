@@ -5,7 +5,6 @@ module Test.Html.Query
         , fromHtml
         , find
         , findAll
-        , children
         , first
         , index
         , count
@@ -19,7 +18,7 @@ module Test.Html.Query
 
 ## Querying
 
-@docs find, findAll, children, first, index
+@docs find, findAll, first, index
 
 ## Expecting
 
@@ -35,10 +34,11 @@ import Expect exposing (Expectation)
 
 {- DESIGN NOTES:
 
-   The reason for having `Query.index` and `Query.first` instead of doing them as
-   selectors (which would let you do e.g. `Query.find [ first ]` to get the
-   first child, instead of `Query.children [] |> Query.first` like you have to
-   do now) is that it's not immediately obvious what a query like this would do:
+   The reason for having `Query.index` and `Query.first` instead of doing them
+   as selectors (which would let you do e.g. `Query.find [ tag "li", first ]`
+   to get the first child, instead of `Query.find [] |> Query.first` like you
+   have to do now) is that it's not immediately obvious what a query like this
+   would do:
 
    Query.findAll [ first, tag "li" ]
 
@@ -120,36 +120,6 @@ fromHtml html =
 findAll : List Selector -> Single -> Multiple
 findAll selectors (Internal.Single showTrace query) =
     Internal.FindAll selectors
-        |> Internal.prependSelector query
-        |> Internal.Multiple showTrace
-
-
-{-| Return the matched element's immediate child elements.
-
-    import Html exposing (div, ul, li)
-    import Html.Attributes exposing (class)
-    import Test.Html.Query as Query
-    import Test exposing (test)
-    import Test.Html.Selector exposing (tag, classes)
-
-
-    test "The <ul> only has <li> children" <|
-        \() ->
-            div []
-                [ ul [ class "items active" ]
-                    [ li [] [ text "first item" ]
-                    , li [] [ text "second item" ]
-                    , li [] [ text "third item" ]
-                    ]
-                ]
-                |> Query.fromHtml
-                |> Query.find [ tag "ul" ]
-                |> Query.children []
-                |> Query.each (Query.has [ tag "li" ])
--}
-children : List Selector -> Single -> Multiple
-children selectors (Internal.Single showTrace query) =
-    Internal.Children selectors
         |> Internal.prependSelector query
         |> Internal.Multiple showTrace
 

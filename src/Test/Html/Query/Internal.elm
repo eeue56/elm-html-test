@@ -16,7 +16,6 @@ type Query
 type SelectorQuery
     = Find (List Selector)
     | FindAll (List Selector)
-    | Children (List Selector)
       -- First and Index are separate so we can report Query.first in error messages
     | First
     | Index Int
@@ -104,16 +103,6 @@ toLinesHelp expectationFailure elmHtmlList selectorQueries queryName results =
                                 recurse elements rest result
                             else
                                 bailOut result
-
-                    Children ->
-                        let
-                            elements =
-                                elmHtmlList
-                                    |> List.concatMap (getChildren >> List.filter isElement)
-                        in
-                            "Query.children"
-                                |> withHtmlContext (getHtmlContext elements)
-                                |> recurse elements rest
 
                     First ->
                         let
@@ -246,11 +235,6 @@ traverseSelector selectorQuery elmHtmlList =
             elmHtmlList
                 |> List.concatMap getChildren
                 |> InternalSelector.queryAll selectors
-                |> Ok
-
-        Children ->
-            elmHtmlList
-                |> List.concatMap (getChildren >> List.filter isElement)
                 |> Ok
 
         First ->
