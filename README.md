@@ -21,6 +21,13 @@ test "Button has the expected text" <|
 
 These tests are designed to be written in a pipeline like this:
 
-1. Run your view logic to get a `Html` value.
-2. Call `Query.fromHtml` on it to begin querying it.
-3. Use queries like `Query.find` and `Query.findAll`
+1. Call `Query.fromHtml` on your `Html` to begin querying it.
+2. Use queries like `Query.find` and `Query.findAll` to find the elements to test.
+3. Create expectations using things like `Query.has` and `Query.count`.
+
+These are normal expectations, so you can use them with [`fuzz`](http://package.elm-lang.org/packages/elm-community/elm-test/latest/Test#fuzz) just as easily as with [`test`](http://package.elm-lang.org/packages/elm-community/elm-test/3.1.0/Test#test)!
+
+## Releases
+| Version | Notes |
+| ------- | ----- |
+| [**1.0.0**](https://github.com/eeue56/elm-html-test/tree/1.0.0) | Initial release
