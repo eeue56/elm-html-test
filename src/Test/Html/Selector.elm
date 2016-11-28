@@ -40,7 +40,7 @@ type alias Selector =
 
     import Html
     import Html.Attributes as Attr
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (class, text, all, Selector)
 
@@ -70,7 +70,7 @@ To match the element's exact class attribute string, use [`className`](#classNam
 
     import Html
     import Html.Attributes as Attr
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (classes)
 
@@ -94,7 +94,7 @@ To match the element's exact class attribute string, use [`className`](#classNam
 
     import Html
     import Html.Attributes as Attr
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (class)
 
@@ -118,7 +118,7 @@ attribute exactly.
 
     import Html
     import Html.Attributes as Attr
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (className)
 
@@ -138,7 +138,7 @@ className =
 
     import Html
     import Html.Attributes as Attr
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (id, text)
 
@@ -160,7 +160,7 @@ id =
 
     import Html
     import Html.Attributes as Attr
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (tag, text)
 
@@ -187,7 +187,7 @@ For attributes with boolean values, such as `checked`, use [`boolAttribute`](#bo
 
     import Html
     import Html.Attributes as Attr
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (attribute, text)
 
@@ -215,7 +215,7 @@ For attributes with string values, such as `title`, use [`attribute`](#attribute
 
     import Html
     import Html.Attributes as Attr
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (boolAttribute, text)
 

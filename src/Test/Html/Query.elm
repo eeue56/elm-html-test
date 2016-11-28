@@ -53,7 +53,7 @@ type alias Multiple =
 typically begin.
 
     import Html
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (text)
 
@@ -78,7 +78,7 @@ fromHtml html =
 
     import Html exposing (div, ul, li)
     import Html.Attributes exposing (class)
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (tag)
     import Expect
@@ -109,7 +109,7 @@ If no descendants match, or if more than one matches, the test will fail.
 
     import Html exposing (div, ul, li)
     import Html.Attributes exposing (class)
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (tag, classes)
 
@@ -141,7 +141,7 @@ will fail.
 
     import Html exposing (div, ul, li)
     import Html.Attributes exposing (class)
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (tag, classes)
 
@@ -178,7 +178,7 @@ If the index falls outside the bounds of the match, the test will fail.
 
     import Html exposing (div, ul, li)
     import Html.Attributes exposing (class)
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (tag, classes)
 
@@ -208,7 +208,7 @@ index position (Internal.Multiple showTrace query) =
 
     import Html exposing (div, ul, li)
     import Html.Attributes exposing (class)
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (tag, classes)
 
@@ -242,7 +242,7 @@ children (Internal.Single showTrace query) =
 
     import Html exposing (div, ul, li)
     import Html.Attributes exposing (class)
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (tag)
 
@@ -270,7 +270,7 @@ count expect ((Internal.Multiple showTrace query) as multiple) =
 
     import Html exposing (div, ul, li)
     import Html.Attributes exposing (class)
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (tag, classes)
 
@@ -299,7 +299,7 @@ has selectors (Internal.Single showTrace query) =
 
     import Html exposing (div, ul, li)
     import Html.Attributes exposing (class)
-    import Query
+    import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (tag, classes)
 
