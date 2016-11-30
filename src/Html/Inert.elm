@@ -4,11 +4,10 @@ module Html.Inert exposing (Node, fromHtml, toElmHtml, fromElmHtml)
 -}
 
 import Html exposing (Html)
-import Native.HtmlAsJson
 import Json.Decode
 import Html exposing (Html)
 import ElmHtml.InternalTypes exposing (decodeElmHtml, ElmHtml)
-
+import Native.HtmlAsJson
 
 type Node
     = Node ElmHtml
