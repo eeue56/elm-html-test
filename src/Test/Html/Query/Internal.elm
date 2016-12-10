@@ -53,6 +53,7 @@ prettyPrint : ElmHtml -> String
 prettyPrint =
     nodeToStringWithOptions { indent = 4, newLines = True }
 
+
 toOutputLine : Query -> String
 toOutputLine (Query node selectors) =
     prettyPrint (Inert.toElmHtml node)
