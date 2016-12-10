@@ -27,6 +27,24 @@ These tests are designed to be written in a pipeline like this:
 
 These are normal expectations, so you can use them with [`fuzz`](http://package.elm-lang.org/packages/elm-community/elm-test/latest/Test#fuzz) just as easily as with [`test`](http://package.elm-lang.org/packages/elm-community/elm-test/3.1.0/Test#test)!
 
+## Querying
+
+Queries come in two flavors: [`Single`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Query#Single) and [`Multiple`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Query#Multiple).
+
+This is because some queries are expected to return a single result, whereas
+others may return multiple results.
+
+If a `Single` query finds exactly one result, it will succeed and continue with
+any further querying or expectations. If it finds zero results, or more than one,
+the test will fail.
+
+Since other querying and expectation functions are written in terms of `Single`
+and `Multiple`, the compiler can help make sure queries are connected as
+expected. For example, [`count`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Query#count) accepts a `Multiple`, because counting a single element does not make much sense!
+
+If you have a `Multiple` and want to use an expectation that works on a `Single`,
+such as [`Query.has`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Query#has), you can use [`Query.each`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Query#each) to run the expectation on each of the elements in the `Multiple`.
+
 ## Releases
 | Version | Notes |
 | ------- | ----- |
