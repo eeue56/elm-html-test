@@ -16,6 +16,7 @@ all =
         , testRoot
         , testFirst
         , testIndex
+        , testChildren
         ]
 
 
@@ -112,6 +113,11 @@ testFindAll =
                     output
                         |> Query.findAll [ tag "footer" ]
                         |> Query.count (Expect.equal 1)
+            , test "sees the nested div" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "div" ]
+                        |> Query.count (Expect.equal 2)
             ]
         ]
 
@@ -152,6 +158,29 @@ testIndex =
         ]
 
 
+testChildren : Test
+testChildren =
+    describe "Query.children"
+        [ describe "on the root" <|
+            [ test "sees the root has one child" <|
+                \() ->
+                    output
+                        |> Query.children []
+                        |> Query.count (Expect.equal 1)
+            , test "sees it's a <header id='heading'>" <|
+                \() ->
+                    output
+                        |> Query.children []
+                        |> Query.each (Query.has [ tag "header", id "heading" ])
+            , test "doesn't see the nested div" <|
+                \() ->
+                    output
+                        |> Query.children [ tag "div" ]
+                        |> Query.count (Expect.equal 1)
+            ]
+        ]
+
+
 output : Single
 output =
     Query.fromHtml sampleHtml
@@ -174,7 +203,8 @@ sampleHtml =
                     , li [ Attr.class "list-item themed" ] [ Html.text "fourth item" ]
                     ]
                 ]
-            , section [] [ Html.text "boring section" ]
+            , section []
+                [ div [ Attr.class "nested-div" ] [ Html.text "boring section" ] ]
             , footer [] [ Html.text "this is the footer" ]
             ]
         ]

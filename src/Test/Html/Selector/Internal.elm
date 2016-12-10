@@ -48,29 +48,46 @@ queryAll selectors list =
             list
 
         selector :: rest ->
-            queryAll rest (query selector list)
+            query ElmHtml.Query.query queryAll selector list
+                |> queryAllChildren rest
 
 
-query : Selector -> List ElmHtml -> List ElmHtml
-query selector list =
+queryAllChildren : List Selector -> List ElmHtml -> List ElmHtml
+queryAllChildren selectors list =
+    case selectors of
+        [] ->
+            list
+
+        selector :: rest ->
+            query ElmHtml.Query.queryChildren queryAllChildren selector list
+                |> queryAllChildren rest
+
+
+query :
+    (ElmHtml.Query.Selector -> ElmHtml -> List ElmHtml)
+    -> (List Selector -> List ElmHtml -> List ElmHtml)
+    -> Selector
+    -> List ElmHtml
+    -> List ElmHtml
+query fn fnAll selector list =
     case selector of
         All selectors ->
-            queryAll selectors list
+            fnAll selectors list
 
         Classes classes ->
-            List.concatMap (ElmHtml.Query.queryByClassList classes) list
+            List.concatMap (fn (ElmHtml.Query.ClassList classes)) list
 
         Class class ->
-            List.concatMap (ElmHtml.Query.queryByClassList [ class ]) list
+            List.concatMap (fn (ElmHtml.Query.ClassList [ class ])) list
 
         Attribute { name, value } ->
-            List.concatMap (ElmHtml.Query.queryByAttribute name value) list
+            List.concatMap (fn (ElmHtml.Query.Attribute name value)) list
 
         BoolAttribute { name, value } ->
-            List.concatMap (ElmHtml.Query.queryByBoolAttribute name value) list
+            List.concatMap (fn (ElmHtml.Query.BoolAttribute name value)) list
 
         Tag { name } ->
-            List.concatMap (ElmHtml.Query.queryByTagName name) list
+            List.concatMap (fn (ElmHtml.Query.Tag name)) list
 
         Text text ->
-            List.concatMap (ElmHtml.Query.query (ElmHtml.Query.ContainsText text)) list
+            List.concatMap (fn (ElmHtml.Query.ContainsText text)) list

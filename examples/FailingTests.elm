@@ -57,13 +57,19 @@ testView =
                         |> Query.find [ id "heading" ]
                         |> Query.find [ tag "img" ]
                         |> Query.has [ tag "img" ]
-            --, test "(this should fail) expect footer's nonexistant child to be a catapult" <|
-            --    \() ->
-            --        output
-            --            |> Query.find [ tag "footer" ]
-            --            |> Query.children
-            --            |> Query.first
-            --            |> Query.has [ tag "catapult" ]
+            , test "(this should fail) expect footer to have a child" <|
+                \() ->
+                    output
+                        |> Query.find [ tag "footer" ]
+                        |> Query.children []
+                        |> Query.each (Query.has [ tag "catapult" ])
+            , test "(this should fail) expect footer's nonexistant child to be a catapult" <|
+                \() ->
+                    output
+                        |> Query.find [ tag "footer" ]
+                        |> Query.children []
+                        |> Query.first
+                        |> Query.has [ tag "catapult" ]
             , test "expect footer to have footer text" <|
                 \() ->
                     output
