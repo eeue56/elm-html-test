@@ -376,7 +376,12 @@ failWithQuery showTrace queryName query expectation =
 addQueryFromHtmlLine : Internal.Query -> String
 addQueryFromHtmlLine query =
     String.join "\n\n"
-        [ prefixOutputLine "Query.fromHtml", Internal.toOutputLine query ]
+        [ prefixOutputLine "Query.fromHtml"
+        , Internal.toOutputLine query
+            |> String.split "\n"
+            |> List.map ((++) Internal.baseIndentation)
+            |> String.join "\n"
+        ]
 
 
 prefixOutputLine : String -> String

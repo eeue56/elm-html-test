@@ -163,9 +163,16 @@ getHtmlContext elmHtmlList =
     if List.isEmpty elmHtmlList then
         "0 matches found for this query."
     else
-        elmHtmlList
-            |> List.indexedMap (\index elmHtml -> htmlPrefix ++ toString (index + 1) ++ ")\n\n" ++ prettyPrint elmHtml)
-            |> String.join "\n\n"
+        let
+            maxDigits =
+                elmHtmlList
+                    |> List.length
+                    |> toString
+                    |> String.length
+        in
+            elmHtmlList
+                |> List.indexedMap (printIndented maxDigits)
+                |> String.join "\n\n"
 
 
 joinAsList : (a -> String) -> List a -> String
@@ -176,8 +183,30 @@ joinAsList toStr list =
         "[ " ++ String.join ", " (List.map toStr list) ++ " ]"
 
 
-htmlPrefix : String
-htmlPrefix =
+printIndented : Int -> Int -> ElmHtml -> String
+printIndented maxDigits index elmHtml =
+    let
+        caption =
+            (toString (index + 1) ++ ")")
+                |> String.padRight (maxDigits + 3) ' '
+                |> String.append baseIndentation
+
+        indentation =
+            String.repeat (String.length caption) " "
+    in
+        case String.split "\n" (prettyPrint elmHtml) of
+            [] ->
+                ""
+
+            first :: rest ->
+                rest
+                    |> List.map (String.append indentation)
+                    |> (::) (caption ++ first)
+                    |> String.join "\n"
+
+
+baseIndentation : String
+baseIndentation =
     "    "
 
 
