@@ -21,9 +21,9 @@ test "Button has the expected text" <|
 
 These tests are designed to be written in a pipeline like this:
 
-1. Call [`Query.fromHtml`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Query#fromHtml) on your [`Html`](http://package.elm-lang.org/packages/elm-lang/html/latest/Html#Html) to begin querying it.
-2. Use queries like [`Query.find`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Query#find), [`Query.findAll`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Query#findAll), and [`Query.children`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Query#children) to find the elements to test.
-3. Create expectations using things like [`Query.has`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Query#has) and [`Query.count`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Query#count).
+1. Call [`Query.fromHtml`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Query#fromHtml) on your [`Html`](http://package.elm-lang.org/packages/elm-lang/html/latest/Html#Html) to begin querying it.
+2. Use queries like [`Query.find`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Query#find), [`Query.findAll`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Query#findAll), and [`Query.children`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Query#children) to find the elements to test.
+3. Create expectations using things like [`Query.has`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Query#has) and [`Query.count`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Query#count).
 
 These are normal expectations, so you can use them with [`fuzz`](http://package.elm-lang.org/packages/elm-community/elm-test/latest/Test#fuzz) just as easily as with [`test`](http://package.elm-lang.org/packages/elm-community/elm-test/3.1.0/Test#test)!
 
