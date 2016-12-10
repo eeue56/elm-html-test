@@ -3,7 +3,7 @@ module Test.Html.Query.Internal exposing (..)
 import Test.Html.Selector.Internal as InternalSelector exposing (Selector, selectorToString)
 import Html.Inert as Inert exposing (Node)
 import ElmHtml.InternalTypes exposing (ElmHtml(..))
-import ElmHtml.ToString exposing (nodeTypeToString)
+import ElmHtml.ToString exposing (nodeToStringWithOptions)
 import Expect exposing (Expectation)
 
 
@@ -49,9 +49,13 @@ toLines expectationFailure (Query node selectors) queryName =
         |> List.reverse
 
 
+prettyPrint : ElmHtml -> String
+prettyPrint =
+    nodeToStringWithOptions { indent = 4, newLines = True }
+
 toOutputLine : Query -> String
 toOutputLine (Query node selectors) =
-    htmlPrefix ++ nodeTypeToString (Inert.toElmHtml node)
+    prettyPrint (Inert.toElmHtml node)
 
 
 toLinesHelp : String -> List ElmHtml -> List SelectorQuery -> String -> List String -> List String
@@ -148,7 +152,7 @@ getHtmlContext elmHtmlList =
         "0 matches found for this query."
     else
         elmHtmlList
-            |> List.indexedMap (\index elmHtml -> htmlPrefix ++ toString (index + 1) ++ ") " ++ nodeTypeToString elmHtml)
+            |> List.indexedMap (\index elmHtml -> htmlPrefix ++ toString (index + 1) ++ ")\n\n" ++ prettyPrint elmHtml)
             |> String.join "\n\n"
 
 

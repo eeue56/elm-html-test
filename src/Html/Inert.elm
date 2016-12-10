@@ -15,7 +15,7 @@ type Node
 
 fromHtml : Html msg -> Node
 fromHtml html =
-    case Json.Decode.decodeString decodeElmHtml (toJson html) of
+    case Json.Decode.decodeString decodeElmHtml (toJsonString html) of
         Ok elmHtml ->
             Node elmHtml
 
@@ -27,10 +27,11 @@ fromElmHtml : ElmHtml -> Node
 fromElmHtml =
     Node
 
-
-toJson : Html a -> String
-toJson =
-    Native.HtmlAsJson.toJson
+{-| Convert a Html node to a Json string
+-}
+toJsonString : Html a -> String
+toJsonString node =
+    Native.HtmlAsJson.toJsonString node
 
 
 toElmHtml : Node -> ElmHtml
