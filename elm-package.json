@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "helpful summary of your project, less than 80 characters",
+    "summary": "Write tests for your Html.",
     "repository": "https://github.com/eeue56/elm-html-test.git",
     "license": "BSD3",
     "source-directories": [
