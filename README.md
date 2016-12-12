@@ -2,7 +2,7 @@
 
 Test views by writing expectations about `Html` values.
 
-```
+```elm
 import Html
 import Html.Attributes exposing (class)
 import Test exposing (test)
