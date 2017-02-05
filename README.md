@@ -1,6 +1,6 @@
 # elm-html-test
 
-Test views by writing expectations about `Html` values.
+Test views by writing expectations about `Html` values. [![Build Status](https://travis-ci.org/eeue56/elm-html-test.svg?branch=master)](https://travis-ci.org/eeue56/elm-html-test)
 
 ```elm
 import Html
