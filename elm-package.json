@@ -1,12 +1,15 @@
 {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "summary": "Write tests for your Html.",
     "repository": "https://github.com/eeue56/elm-html-test.git",
     "license": "BSD3",
     "source-directories": [
         "src"
     ],
-    "exposed-modules": ["Test.Html.Selector", "Test.Html.Query"],
+    "exposed-modules": [
+        "Test.Html.Selector",
+        "Test.Html.Query"
+    ],
     "native-modules": true,
     "dependencies": {
         "eeue56/elm-html-in-elm": "2.0.0 <= v < 3.0.0",
