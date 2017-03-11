@@ -10,6 +10,7 @@ module Test.Html.Query
         , index
         , count
         , has
+        , hasNot
         , each
         )
 
@@ -23,7 +24,7 @@ module Test.Html.Query
 
 ## Expecting
 
-@docs count, has, each
+@docs count, has, hasNot, each
 -}
 
 import Html exposing (Html)
@@ -312,6 +313,27 @@ has : List Selector -> Single -> Expectation
 has selectors (Internal.Single showTrace query) =
     Internal.has selectors query
         |> failWithQuery showTrace ("Query.has " ++ Internal.joinAsList selectorToString selectors) query
+
+
+{-| Expect the element to **not** match all of the given selectors.
+
+    import Html exposing (div, ul, li)
+    import Test.Html.Query as Query
+    import Test exposing (test)
+    import Test.Html.Selector exposing (tag, class)
+
+
+    test "The div element has no progress-bar class" <|
+        \() ->
+            div  []
+                |> Query.fromHtml
+                |> Query.find [ tag "div" ]
+                |> Query.hasNot [ tag "div", class "progress-bar" ]
+-}
+hasNot : List Selector -> Single -> Expectation
+hasNot selectors (Internal.Single showTrace query) =
+    Internal.hasNot selectors query
+        |> failWithQuery showTrace ("Query.hasNot " ++ Internal.joinAsList selectorToString selectors) query
 
 
 {-| Expect that a [`Single`](#Single) expectation will hold true for each of the

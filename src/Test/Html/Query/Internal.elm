@@ -419,6 +419,22 @@ has selectors query =
             Expect.fail (queryErrorToString query error)
 
 
+hasNot : List Selector -> Query -> Expectation
+hasNot selectors query =
+    case traverse query of
+        Ok elmHtmlList ->
+            if List.isEmpty (InternalSelector.queryAll selectors elmHtmlList) then
+                Expect.pass
+            else
+                selectors
+                    |> List.map (showSelectorOutcome elmHtmlList)
+                    |> String.join "\n"
+                    |> Expect.fail
+
+        Err error ->
+            Expect.pass
+
+
 showSelectorOutcome : List ElmHtml -> Selector -> String
 showSelectorOutcome elmHtmlList selector =
     let
