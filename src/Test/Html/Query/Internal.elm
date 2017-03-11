@@ -427,7 +427,7 @@ hasNot selectors query =
                 Expect.pass
             else
                 selectors
-                    |> List.map (showSelectorOutcome elmHtmlList)
+                    |> List.map (showSelectorOutcomeInverse elmHtmlList)
                     |> String.join "\n"
                     |> Expect.fail
 
@@ -445,3 +445,15 @@ showSelectorOutcome elmHtmlList selector =
                 "✓"
     in
         String.join " " [ outcome, "has", selectorToString selector ]
+
+
+showSelectorOutcomeInverse : List ElmHtml -> Selector -> String
+showSelectorOutcomeInverse elmHtmlList selector =
+    let
+        outcome =
+            if List.isEmpty (InternalSelector.queryAll [ selector ] elmHtmlList) then
+                "✓"
+            else
+                "✗"
+    in
+        String.join " " [ outcome, "has not", selectorToString selector ]
