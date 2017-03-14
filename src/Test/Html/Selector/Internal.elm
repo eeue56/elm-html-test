@@ -49,18 +49,51 @@ queryAll selectors list =
 
         selector :: rest ->
             query ElmHtml.Query.query queryAll selector list
-                |> queryAllChildren rest
+                |> queryAll rest
 
 
-queryAllChildren : List Selector -> List ElmHtml -> List ElmHtml
-queryAllChildren selectors list =
-    case selectors of
-        [] ->
-            list
+queryOnlyChildren : List Selector -> List ElmHtml -> List ElmHtml
+queryOnlyChildren selectors list =
+    let
+        querySelectors =
+            List.map toQuerySelector selectors
 
-        selector :: rest ->
-            query ElmHtml.Query.queryChildren queryAllChildren selector list
-                |> queryAllChildren rest
+        parentNode =
+            List.head list
+
+        dropParentIfIncluded elements =
+            if List.head elements == parentNode then
+                List.drop 1 elements
+            else
+                elements
+    in
+        List.concatMap (ElmHtml.Query.queryChildrenAll querySelectors) list
+            |> dropParentIfIncluded
+
+
+toQuerySelector : Selector -> ElmHtml.Query.Selector
+toQuerySelector selector =
+    case selector of
+        All selectors ->
+            ElmHtml.Query.Multiple (List.map toQuerySelector selectors)
+
+        Classes classes ->
+            ElmHtml.Query.ClassList classes
+
+        Class class ->
+            ElmHtml.Query.ClassList [ class ]
+
+        Attribute { name, value } ->
+            ElmHtml.Query.Attribute name value
+
+        BoolAttribute { name, value } ->
+            ElmHtml.Query.BoolAttribute name value
+
+        Tag { name } ->
+            ElmHtml.Query.Tag name
+
+        Text text ->
+            ElmHtml.Query.ContainsText text
 
 
 query :
