@@ -115,6 +115,7 @@ toLinesHelp expectationFailure elmHtmlList selectorQueries queryName results =
                             elements =
                                 elmHtmlList
                                     |> InternalSelector.queryAllChildren selectors
+                                    |> List.drop 1
                         in
                             ("Query.children " ++ joinAsList selectorToString selectors)
                                 |> withHtmlContext (getHtmlContext elements)
