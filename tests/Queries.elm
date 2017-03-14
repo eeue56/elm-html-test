@@ -168,21 +168,21 @@ testChildren : Single -> Test
 testChildren output =
     describe "Query.children"
         [ describe "on the root" <|
-            [ test "sees the root has one child" <|
+            [ test "returns the child" <|
                 \() ->
                     output
                         |> Query.children []
                         |> Query.count (Expect.equal 1)
-            , test "sees it's a <header id='heading'>" <|
+            , test "sees the child is a <div class='container'>" <|
                 \() ->
                     output
                         |> Query.children []
-                        |> Query.each (Query.has [ tag "header", id "heading" ])
-            , test "doesn't see the nested div" <|
+                        |> Query.each (Query.has [ tag "div", class "container" ])
+            , test "doesn't see the nested header" <|
                 \() ->
                     output
-                        |> Query.children [ tag "div" ]
-                        |> Query.count (Expect.equal 1)
+                        |> Query.children [ tag "header" ]
+                        |> Query.count (Expect.equal 0)
             ]
         ]
 
