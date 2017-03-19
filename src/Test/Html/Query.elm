@@ -317,7 +317,8 @@ has selectors (Internal.Single showTrace query) =
 
 {-| Expect the element to **not** match all of the given selectors.
 
-    import Html exposing (div, ul, li)
+    import Html exposing (div)
+    import Html.Attributes as Attributes
     import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (tag, class)
@@ -325,15 +326,19 @@ has selectors (Internal.Single showTrace query) =
 
     test "The div element has no progress-bar class" <|
         \() ->
-            div  []
+            div [ Attributes.class "button" ] []
                 |> Query.fromHtml
                 |> Query.find [ tag "div" ]
                 |> Query.hasNot [ tag "div", class "progress-bar" ]
 -}
 hasNot : List Selector -> Single -> Expectation
 hasNot selectors (Internal.Single showTrace query) =
-    Internal.hasNot selectors query
-        |> failWithQuery showTrace ("Query.hasNot " ++ Internal.joinAsList selectorToString selectors) query
+    let
+        queryName =
+            "Query.hasNot " ++ Internal.joinAsList selectorToString selectors
+    in
+        Internal.hasNot selectors query
+            |> failWithQuery showTrace queryName query
 
 
 {-| Expect that a [`Single`](#Single) expectation will hold true for each of the

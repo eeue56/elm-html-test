@@ -422,14 +422,19 @@ has selectors query =
 hasNot : List Selector -> Query -> Expectation
 hasNot selectors query =
     case traverse query of
+        Ok [] ->
+            Expect.pass
+
         Ok elmHtmlList ->
-            if List.isEmpty (InternalSelector.queryAll selectors elmHtmlList) then
-                Expect.pass
-            else
-                selectors
-                    |> List.map (showSelectorOutcomeInverse elmHtmlList)
-                    |> String.join "\n"
-                    |> Expect.fail
+            case InternalSelector.queryAll selectors elmHtmlList of
+                [] ->
+                    Expect.pass
+
+                _ ->
+                    selectors
+                        |> List.map (showSelectorOutcomeInverse elmHtmlList)
+                        |> String.join "\n"
+                        |> Expect.fail
 
         Err error ->
             Expect.pass
@@ -439,10 +444,12 @@ showSelectorOutcome : List ElmHtml -> Selector -> String
 showSelectorOutcome elmHtmlList selector =
     let
         outcome =
-            if List.isEmpty (InternalSelector.queryAll [ selector ] elmHtmlList) then
-                "✗"
-            else
-                "✓"
+            case InternalSelector.queryAll [ selector ] elmHtmlList of
+                [] ->
+                    "✗"
+
+                _ ->
+                    "✓"
     in
         String.join " " [ outcome, "has", selectorToString selector ]
 
@@ -451,9 +458,11 @@ showSelectorOutcomeInverse : List ElmHtml -> Selector -> String
 showSelectorOutcomeInverse elmHtmlList selector =
     let
         outcome =
-            if List.isEmpty (InternalSelector.queryAll [ selector ] elmHtmlList) then
-                "✓"
-            else
-                "✗"
+            case InternalSelector.queryAll [ selector ] elmHtmlList of
+                [] ->
+                    "✓"
+
+                _ ->
+                    "✗"
     in
         String.join " " [ outcome, "has not", selectorToString selector ]
