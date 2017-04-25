@@ -18,6 +18,15 @@ var _eeue56$elm_html_test$Native_HtmlAsJson = (function() {
                 return "";
             }
             return asString;
-        }
+        },
+        getEventDecoder: F2(function (name, events) {
+            var event = events[name];
+            if (!event) return { ctor: 'Nothing' };
+
+            return {
+              ctor: 'Just',
+              _0: event.decoder
+            }
+        })
     };
 })();
