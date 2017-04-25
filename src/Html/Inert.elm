@@ -9,13 +9,14 @@ import Html exposing (Html)
 import ElmHtml.InternalTypes exposing (decodeElmHtml, ElmHtml)
 import Native.HtmlAsJson
 
+
 type Node
     = Node ElmHtml
 
 
 fromHtml : Html msg -> Node
 fromHtml html =
-    case Json.Decode.decodeString decodeElmHtml (toJsonString html) of
+    case Json.Decode.decodeValue decodeElmHtml (toJson html) of
         Ok elmHtml ->
             Node elmHtml
 
@@ -27,11 +28,12 @@ fromElmHtml : ElmHtml -> Node
 fromElmHtml =
     Node
 
+
 {-| Convert a Html node to a Json string
 -}
-toJsonString : Html a -> String
-toJsonString node =
-    Native.HtmlAsJson.toJsonString node
+toJson : Html a -> Json.Decode.Value
+toJson node =
+    Native.HtmlAsJson.toJson node
 
 
 toElmHtml : Node -> ElmHtml

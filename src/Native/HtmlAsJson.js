@@ -9,15 +9,9 @@ var _eeue56$elm_html_test$Native_HtmlAsJson = (function() {
         return vNode;
     }
 
-    // stringify needed to strip functions - can performance-optimize this later!
     return {
-        toJsonString: function(html) {
-            var asString = JSON.stringify(forceThunks(html));
-
-            if (typeof asString === "undefined"){
-                return "";
-            }
-            return asString;
+        toJson: function(html) {
+            return forceThunks(html);
         },
         getEventDecoder: F2(function (name, events) {
             var event = events[name];
