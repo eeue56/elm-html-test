@@ -1,7 +1,7 @@
 module Events exposing (..)
 
 import Expect
-import Html exposing (Html, button, div, text)
+import Html exposing (Html, button, div, text, input)
 import Html.Attributes as Attr exposing (href)
 import Html.Events exposing (onClick, onInput)
 import Html.Lazy as Lazy
@@ -38,12 +38,20 @@ all =
                     |>
                         Result.map (always MappedSampleMsg)
                     |> Expect.equal (Ok MappedSampleMsg)
+        , test "triggers input on element with transformation" <|
+            \() ->
+                Query.fromHtml sampleInput
+                    |> Query.findAll [ tag "input" ]
+                    |> Query.first
+                    |> Events.trigger "input" "{\"target\": {\"value\": \"cats\"}}"
+                    |> Expect.equal (Ok <| SampleInputMsg "CATS")
         ]
 
 
 type Msg
     = SampleMsg
     | MappedSampleMsg
+    | SampleInputMsg String
 
 
 sampleHtml : Html Msg
@@ -66,4 +74,11 @@ sampleMappedHtml : Html Msg
 sampleMappedHtml =
     div [ Attr.class "container" ]
         [ Html.map (always MappedSampleMsg) (button [ onClick SampleMsg ] [ text "click me" ])
+        ]
+
+
+sampleInput : Html Msg
+sampleInput =
+    div [ Attr.class "container" ]
+        [ input [ onInput (String.toUpper >> SampleInputMsg) ] []
         ]
