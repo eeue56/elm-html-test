@@ -2,6 +2,7 @@ module ExampleApp exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 
 
 type alias Model =
@@ -13,11 +14,16 @@ exampleModel =
     ()
 
 
-view : Model -> Html msg
+type Msg
+    = SomeMsg
+    | AnotherMsg
+
+
+view : Model -> Html Msg
 view model =
     div [ class "container" ]
         [ header [ class "funky themed", id "heading" ]
-            [ a [ href "http://elm-lang.org" ] [ text "home" ]
+            [ a [ href "http://elm-lang.org", onClick SomeMsg ] [ text "home" ]
             , a [ href "http://elm-lang.org/examples" ] [ text "examples" ]
             , a [ href "http://elm-lang.org/docs" ] [ text "docs" ]
             ]

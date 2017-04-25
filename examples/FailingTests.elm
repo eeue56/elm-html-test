@@ -1,12 +1,13 @@
 port module Main exposing (..)
 
-import Test.Runner.Node exposing (run, TestProgram)
+import ExampleApp exposing (Msg(..), exampleModel, view)
 import Expect
-import Test exposing (..)
 import Json.Encode exposing (Value)
+import Test exposing (..)
+import Test.Html.Events as Events
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (..)
-import ExampleApp exposing (view, exampleModel)
+import Test.Runner.Node exposing (TestProgram, run)
 
 
 main : TestProgram
@@ -86,4 +87,31 @@ testView =
                         |> Query.find [ tag "ul" ]
                         |> Query.findAll [ tag "li" ]
                         |> Query.each (Query.has [ classes [ "list-item", "themed" ] ])
+            , test "expect first a to send SomeMsg onClick" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "a" ]
+                        |> Query.first
+                        |> Events.trigger "click" "{}"
+                        |> Expect.equal (Ok SomeMsg)
+            , test "(this should fail) expect first a to send AnotherMsg onClick, even though it sends SomeMsg" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "a" ]
+                        |> Query.first
+                        |> Events.trigger "click" "{}"
+                        |> Expect.equal (Ok AnotherMsg)
+            , test "(this should fail) expect first a to trigger a blur event, even though it doesn't have one" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "a" ]
+                        |> Query.first
+                        |> Events.trigger "blur" "{}"
+                        |> Expect.equal (Ok SomeMsg)
+            , test "(this should fail) expect text to trigger onClick, even though it is a text" <|
+                \() ->
+                    output
+                        |> Query.find [ text "home" ]
+                        |> Events.trigger "click" "{}"
+                        |> Expect.equal (Ok SomeMsg)
             ]
