@@ -40,21 +40,21 @@ getEventDecoder =
 
 -}
 simulate : String -> String -> Query.Single -> Result String msg
-simulate name event (QueryInternal.Single showTrace query) =
+simulate eventName event (QueryInternal.Single showTrace query) =
     QueryInternal.traverse query
-        |> Result.andThen (QueryInternal.verifySingle name)
+        |> Result.andThen (QueryInternal.verifySingle eventName)
         |> Result.mapError (QueryInternal.queryErrorToString query)
-        |> Result.andThen (findEvent name)
+        |> Result.andThen (findEvent eventName)
         |> Result.andThen (\decoder -> decodeString decoder event)
 
 
 findEvent : String -> ElmHtml -> Result String (Json.Decode.Decoder msg)
-findEvent name element =
+findEvent eventName element =
     case element of
         NodeEntry node ->
             node.facts.events
-                |> Maybe.andThen (getEventDecoder name)
-                |> Result.fromMaybe ("Could not find a " ++ name ++ " event for " ++ QueryInternal.prettyPrint element)
+                |> Maybe.andThen (getEventDecoder eventName)
+                |> Result.fromMaybe ("Could not find a " ++ eventName ++ " event for " ++ QueryInternal.prettyPrint element)
 
         _ ->
-            Err ("Found element is not a common HTML Node, therefore could not get msg for " ++ name ++ " on it. Element found: " ++ QueryInternal.prettyPrint element)
+            Err ("Found element is not a common HTML Node, therefore could not get msg for " ++ eventName ++ " on it. Element found: " ++ QueryInternal.prettyPrint element)
