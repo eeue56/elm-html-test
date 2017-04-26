@@ -1,11 +1,11 @@
 module Test.Html.Events
     exposing
-        ( msgFor
+        ( simulate
         )
 
 {-|
 
-@docs msgFor
+@docs simulate
 -}
 
 import ElmHtml.InternalTypes exposing (ElmHtml(NodeEntry))
@@ -35,12 +35,12 @@ getEventDecoder =
         \() ->
             Html.input [ onInput Change ] [ ]
                 |> Query.fromHtml
-                |> Events.msgFor "input" "{\"target\": {\"value\": \"cats\"}}"
+                |> Events.simulate "input" "{\"target\": {\"value\": \"cats\"}}"
                 |> Expect.equal (Ok <| Change "cats")
 
 -}
-msgFor : String -> String -> Query.Single -> Result String msg
-msgFor name event (QueryInternal.Single showTrace query) =
+simulate : String -> String -> Query.Single -> Result String msg
+simulate name event (QueryInternal.Single showTrace query) =
     QueryInternal.traverse query
         |> Result.andThen (QueryInternal.verifySingle name)
         |> Result.mapError (QueryInternal.queryErrorToString query)

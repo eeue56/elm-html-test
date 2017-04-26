@@ -19,21 +19,21 @@ all =
                 Query.fromHtml sampleHtml
                     |> Query.findAll [ tag "button" ]
                     |> Query.first
-                    |> Events.msgFor "click" "{}"
+                    |> Events.simulate "click" "{}"
                     |> Expect.equal (Ok SampleMsg)
         , test "returns msg for click on lazy html" <|
             \() ->
                 Query.fromHtml sampleLazyHtml
                     |> Query.findAll [ tag "button" ]
                     |> Query.first
-                    |> Events.msgFor "click" "{}"
+                    |> Events.simulate "click" "{}"
                     |> Expect.equal (Ok SampleMsg)
         , test "returns msg for click on mapped html" <|
             \() ->
                 Query.fromHtml sampleMappedHtml
                     |> Query.findAll [ tag "button" ]
                     |> Query.first
-                    |> Events.msgFor "click" "{}"
+                    |> Events.simulate "click" "{}"
                     -- TODO: Html.Map is ignored when traversing the DOM, need to fix it to avoid repeated mapping on tests like this
                     |>
                         Result.map (always MappedSampleMsg)
@@ -43,7 +43,7 @@ all =
                 Query.fromHtml sampleInput
                     |> Query.findAll [ tag "input" ]
                     |> Query.first
-                    |> Events.msgFor "input" "{\"target\": {\"value\": \"cats\"}}"
+                    |> Events.simulate "input" "{\"target\": {\"value\": \"cats\"}}"
                     |> Expect.equal (Ok <| SampleInputMsg "CATS")
         ]
 

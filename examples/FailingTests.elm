@@ -92,26 +92,26 @@ testView =
                     output
                         |> Query.findAll [ tag "a" ]
                         |> Query.first
-                        |> Events.msgFor "click" "{}"
+                        |> Events.simulate "click" "{}"
                         |> Expect.equal (Ok SomeMsg)
             , test "(this should fail) expect first a to return AnotherMsg on click, even though it returns SomeMsg" <|
                 \() ->
                     output
                         |> Query.findAll [ tag "a" ]
                         |> Query.first
-                        |> Events.msgFor "click" "{}"
+                        |> Events.simulate "click" "{}"
                         |> Expect.equal (Ok AnotherMsg)
             , test "(this should fail) expect first a to return a msg for a blur event, even though it doesn't have one" <|
                 \() ->
                     output
                         |> Query.findAll [ tag "a" ]
                         |> Query.first
-                        |> Events.msgFor "blur" "{}"
+                        |> Events.simulate "blur" "{}"
                         |> Expect.equal (Ok SomeMsg)
             , test "(this should fail) expect text to return a msg for click, even though it is a text" <|
                 \() ->
                     output
                         |> Query.find [ text "home" ]
-                        |> Events.msgFor "click" "{}"
+                        |> Events.simulate "click" "{}"
                         |> Expect.equal (Ok SomeMsg)
             ]
