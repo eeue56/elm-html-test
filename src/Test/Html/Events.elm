@@ -20,7 +20,24 @@ getEventDecoder =
     Native.HtmlAsJson.getEventDecoder
 
 
-{-| msgFor events
+{-| Gets a Msg produced by a node when an event is triggered.
+
+    import Html
+    import Html.Events exposing (onInput)
+    import Test.Html.Query as Query
+    import Test.Html.Events as Events
+    import Test exposing (test)
+
+    type Msg
+        = Change String
+
+    test "Input produces expected Msg" <|
+        \() ->
+            Html.input [ onInput Change ] [ ]
+                |> Query.fromHtml
+                |> Events.msgFor "input" "{\"target\": {\"value\": \"cats\"}}"
+                |> Expect.equal (Ok <| Change "cats")
+
 -}
 msgFor : String -> String -> Query.Single -> Result String msg
 msgFor name event (QueryInternal.Single showTrace query) =
