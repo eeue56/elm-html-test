@@ -42,12 +42,6 @@ type Event
 
 {-| Gets a Msg produced by a node when an event is simulated.
 
-    import Html
-    import Html.Events exposing (onInput)
-    import Test.Html.Query as Query
-    import Test.Html.Events as Events
-    import Test exposing (test)
-
     type Msg
         = Change String
 
@@ -137,13 +131,13 @@ findEvent eventName element =
     case element of
         NodeEntry node ->
             node.facts.events
-                |> Maybe.andThen (getEventDecoder eventName)
+                |> Maybe.andThen (eventDecoder eventName)
                 |> Result.fromMaybe ("Could not find a " ++ eventName ++ " event for " ++ QueryInternal.prettyPrint element)
 
         _ ->
             Err ("Found element is not a common HTML Node, therefore could not get msg for " ++ eventName ++ " on it. Element found: " ++ QueryInternal.prettyPrint element)
 
 
-getEventDecoder : String -> Json.Decode.Value -> Maybe (Json.Decode.Decoder msg)
-getEventDecoder =
-    Native.HtmlAsJson.getEventDecoder
+eventDecoder : String -> Json.Decode.Value -> Maybe (Json.Decode.Decoder msg)
+eventDecoder eventName event =
+    Native.HtmlAsJson.eventDecoder eventName event

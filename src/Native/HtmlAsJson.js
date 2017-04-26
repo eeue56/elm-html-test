@@ -13,7 +13,7 @@ var _eeue56$elm_html_test$Native_HtmlAsJson = (function() {
         toJson: function(html) {
             return forceThunks(html);
         },
-        getEventDecoder: F2(function (name, events) {
+        eventDecoder: F2(function (name, events) {
             var event = events[name];
             if (!event) return { ctor: 'Nothing' };
 

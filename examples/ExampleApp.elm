@@ -15,16 +15,16 @@ exampleModel =
 
 
 type Msg
-    = SomeMsg
-    | AnotherMsg
+    = GoToHome
+    | GoToExamples
 
 
 view : Model -> Html Msg
 view model =
     div [ class "container" ]
         [ header [ class "funky themed", id "heading" ]
-            [ a [ href "http://elm-lang.org", onClick SomeMsg ] [ text "home" ]
-            , a [ href "http://elm-lang.org/examples" ] [ text "examples" ]
+            [ a [ href "http://elm-lang.org", onClick GoToHome ] [ text "home" ]
+            , a [ href "http://elm-lang.org/examples", onClick GoToExamples ] [ text "examples" ]
             , a [ href "http://elm-lang.org/docs" ] [ text "docs" ]
             ]
         , section [ class "funky themed", id "section" ]

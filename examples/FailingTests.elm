@@ -87,31 +87,31 @@ testView =
                         |> Query.find [ tag "ul" ]
                         |> Query.findAll [ tag "li" ]
                         |> Query.each (Query.has [ classes [ "list-item", "themed" ] ])
-            , test "expect first a to send SomeMsg onClick" <|
+            , test "expect first a to send GoToHome onClick" <|
                 \() ->
                     output
                         |> Query.findAll [ tag "a" ]
                         |> Query.first
                         |> Events.simulate Click
-                        |> Expect.equal (Ok SomeMsg)
-            , test "(this should fail) expect first a to return AnotherMsg on click, even though it returns SomeMsg" <|
+                        |> Expect.equal (Ok GoToHome)
+            , test "(this should fail) expect first a to return GoToExamples on click, even though it returns GoToHome" <|
                 \() ->
                     output
                         |> Query.findAll [ tag "a" ]
                         |> Query.first
                         |> Events.simulate Click
-                        |> Expect.equal (Ok AnotherMsg)
+                        |> Expect.equal (Ok GoToExamples)
             , test "(this should fail) expect first a to return a msg for a blur event, even though it doesn't have one" <|
                 \() ->
                     output
                         |> Query.findAll [ tag "a" ]
                         |> Query.first
                         |> Events.simulate Blur
-                        |> Expect.equal (Ok SomeMsg)
+                        |> Expect.equal (Ok GoToHome)
             , test "(this should fail) expect text to return a msg for click, even though it is a text" <|
                 \() ->
                     output
                         |> Query.find [ text "home" ]
                         |> Events.simulate Click
-                        |> Expect.equal (Ok SomeMsg)
+                        |> Expect.equal (Ok GoToHome)
             ]
