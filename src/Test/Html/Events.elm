@@ -1,11 +1,11 @@
 module Test.Html.Events
     exposing
-        ( trigger
+        ( msgFor
         )
 
 {-|
 
-@docs trigger
+@docs msgFor
 -}
 
 import ElmHtml.InternalTypes exposing (ElmHtml(NodeEntry))
@@ -20,12 +20,12 @@ getEventDecoder =
     Native.HtmlAsJson.getEventDecoder
 
 
-{-| Trigger events
+{-| msgFor events
 -}
-trigger : String -> String -> Query.Single -> Result String msg
-trigger name event (QueryInternal.Single showTrace query) =
+msgFor : String -> String -> Query.Single -> Result String msg
+msgFor name event (QueryInternal.Single showTrace query) =
     QueryInternal.traverse query
-        |> Result.andThen (QueryInternal.verifySingle <| "Trigger " ++ name)
+        |> Result.andThen (QueryInternal.verifySingle name)
         |> Result.mapError (QueryInternal.queryErrorToString query)
         |> Result.andThen (findEvent name)
         |> Result.andThen (\decoder -> decodeString decoder event)
@@ -40,4 +40,4 @@ findEvent name element =
                 |> Result.fromMaybe ("Could not find a " ++ name ++ " event for " ++ QueryInternal.prettyPrint element)
 
         _ ->
-            Err ("Found element is not a common HTML Node, therefore could not trigger " ++ name ++ " on it. Element found: " ++ QueryInternal.prettyPrint element)
+            Err ("Found element is not a common HTML Node, therefore could not get msg for " ++ name ++ " on it. Element found: " ++ QueryInternal.prettyPrint element)
