@@ -5,7 +5,13 @@ module Test.Html.Events
 
 {-|
 
+This module allows you to simulate events on Html nodes, the Msg generated
+by the event is returned so you can test it
+
+## Simulating Events
+
 @docs simulate
+
 -}
 
 import ElmHtml.InternalTypes exposing (ElmHtml(NodeEntry))
@@ -20,7 +26,7 @@ getEventDecoder =
     Native.HtmlAsJson.getEventDecoder
 
 
-{-| Gets a Msg produced by a node when an event is triggered.
+{-| Gets a Msg produced by a node when an event is simulated.
 
     import Html
     import Html.Events exposing (onInput)
