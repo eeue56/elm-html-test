@@ -13,7 +13,7 @@ by the event is returned so you can test it
 
 -}
 
-import ElmHtml.InternalTypes exposing (ElmHtml(NodeEntry))
+import ElmHtml.InternalTypes exposing (ElmHtml(..))
 import Json.Decode exposing (decodeString)
 import Json.Encode exposing (bool, encode, object, string)
 import Native.HtmlAsJson
@@ -128,16 +128,32 @@ rawEvent event =
 
 findEvent : String -> ElmHtml -> Result String (Json.Decode.Decoder msg)
 findEvent eventName element =
-    case element of
-        NodeEntry node ->
+    let
+        elementOutput =
+            QueryInternal.prettyPrint element
+
+        nodeEventDecoder node =
             node.facts.events
-                |> Maybe.andThen (eventDecoder eventName)
-                |> Result.fromMaybe ("Could not find a " ++ eventName ++ " event for " ++ QueryInternal.prettyPrint element)
+                |> Maybe.map (eventDecoder eventName)
+                |> Maybe.withDefault (Err <| elementOutput ++ " has no events")
+    in
+        case element of
+            TextTag _ ->
+                Err ("Found element is a text, which does not produce events, therefore could not simulate " ++ eventName ++ " on it. Text found: " ++ elementOutput)
 
-        _ ->
-            Err ("Found element is not a common HTML Node, therefore could not get msg for " ++ eventName ++ " on it. Element found: " ++ QueryInternal.prettyPrint element)
+            NodeEntry node ->
+                nodeEventDecoder node
+
+            CustomNode node ->
+                nodeEventDecoder node
+
+            MarkdownNode node ->
+                nodeEventDecoder node
+
+            NoOp ->
+                Err ("Unknown element found. Could not simulate " ++ eventName ++ " on it.")
 
 
-eventDecoder : String -> Json.Decode.Value -> Maybe (Json.Decode.Decoder msg)
+eventDecoder : String -> Json.Decode.Value -> Result String (Json.Decode.Decoder msg)
 eventDecoder eventName event =
     Native.HtmlAsJson.eventDecoder eventName event

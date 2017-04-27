@@ -13,14 +13,11 @@ var _eeue56$elm_html_test$Native_HtmlAsJson = (function() {
         toJson: function(html) {
             return forceThunks(html);
         },
-        eventDecoder: F2(function (name, events) {
-            var event = events[name];
-            if (!event) return { ctor: 'Nothing' };
+        eventDecoder: F2(function (eventName, events) {
+            var event = events[eventName];
+            if (!event) return _elm_lang$core$Result$Err('Event ' + eventName + ' not found');
 
-            return {
-              ctor: 'Just',
-              _0: event.decoder
-            }
+            return _elm_lang$core$Result$Ok(event.decoder);
         })
     };
 })();
