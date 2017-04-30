@@ -13,6 +13,7 @@ by the event is returned so you can test it
 
 -}
 
+import Dict
 import ElmHtml.InternalTypes exposing (ElmHtml(..))
 import Json.Decode exposing (decodeString)
 import Json.Encode exposing (bool, encode, object, string)
@@ -134,8 +135,9 @@ findEvent eventName element =
 
         nodeEventDecoder node =
             node.facts.events
-                |> Maybe.map (eventDecoder eventName)
-                |> Maybe.withDefault (Err <| elementOutput ++ " has no events")
+                |> Dict.get eventName
+                |> Maybe.map eventDecoder
+                |> Result.fromMaybe (elementOutput ++ " has no " ++ eventName ++ " event")
     in
         case element of
             TextTag _ ->
@@ -154,6 +156,6 @@ findEvent eventName element =
                 Err ("Unknown element found. Could not simulate " ++ eventName ++ " on it.")
 
 
-eventDecoder : String -> Json.Decode.Value -> Result String (Json.Decode.Decoder msg)
-eventDecoder eventName event =
-    Native.HtmlAsJson.eventDecoder eventName event
+eventDecoder : Json.Decode.Value -> Json.Decode.Decoder msg
+eventDecoder event =
+    Native.HtmlAsJson.eventDecoder event

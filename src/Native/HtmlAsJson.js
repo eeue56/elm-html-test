@@ -13,11 +13,8 @@ var _eeue56$elm_html_test$Native_HtmlAsJson = (function() {
         toJson: function(html) {
             return forceThunks(html);
         },
-        eventDecoder: F2(function (eventName, events) {
-            var event = events[eventName];
-            if (!event) return _elm_lang$core$Result$Err('Event ' + eventName + ' not found');
-
-            return _elm_lang$core$Result$Ok(event.decoder);
-        })
+        eventDecoder: function (event) {
+            return event.decoder;
+        }
     };
 })();
