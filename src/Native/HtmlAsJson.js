@@ -15,6 +15,9 @@ var _eeue56$elm_html_test$Native_HtmlAsJson = (function() {
         },
         eventDecoder: function (event) {
             return event.decoder;
+        },
+        taggerFunction: function (tagger) {
+            return tagger;
         }
     };
 })();

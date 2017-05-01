@@ -35,10 +35,14 @@ all =
                     |> Query.findAll [ tag "button" ]
                     |> Query.first
                     |> Events.simulate Click
-                    -- TODO: Html.Map is ignored when traversing the DOM, need to fix it to avoid repeated mapping on tests like this
-                    |>
-                        Result.map (always MappedSampleMsg)
                     |> Expect.equal (Ok MappedSampleMsg)
+        , test "returns msg for click on deep mapped html" <|
+            \() ->
+                Query.fromHtml deepMappedHtml
+                    |> Query.findAll [ tag "input" ]
+                    |> Query.first
+                    |> Events.simulate (Input "foo")
+                    |> Expect.equal (Ok (SampleInputMsg "foobar"))
         , test "returns msg for input with transformation" <|
             \() ->
                 input [ onInput (String.toUpper >> SampleInputMsg) ] []
@@ -97,6 +101,21 @@ sampleMappedHtml : Html Msg
 sampleMappedHtml =
     div [ Attr.class "container" ]
         [ Html.map (always MappedSampleMsg) (button [ onClick SampleMsg ] [ text "click me" ])
+        ]
+
+
+deepMappedHtml : Html Msg
+deepMappedHtml =
+    div []
+        [ Html.map (SampleInputMsg)
+            (div []
+                [ Html.map (\msg -> msg ++ "bar")
+                    (div []
+                        [ input [ onInput identity ] []
+                        ]
+                    )
+                ]
+            )
         ]
 
 
