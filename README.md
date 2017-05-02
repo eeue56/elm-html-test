@@ -48,4 +48,5 @@ such as [`Query.has`](http://package.elm-lang.org/packages/eeue56/elm-html-test/
 ## Releases
 | Version | Notes |
 | ------- | ----- |
+| [**1.1.0**](https://github.com/eeue56/elm-html-test/tree/1.1.0) | Support for events by @rogeriochaves
 | [**1.0.0**](https://github.com/eeue56/elm-html-test/tree/1.0.0) | Initial release
