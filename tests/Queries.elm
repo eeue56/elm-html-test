@@ -1,6 +1,7 @@
 module Queries exposing (..)
 
 import Html exposing (Html, div, ul, li, header, footer, a, section)
+import Html.Lazy as Lazy
 import Html.Attributes as Attr exposing (href)
 import Test.Html.Query as Query exposing (Single)
 import Test.Html.Selector exposing (..)
@@ -10,18 +11,23 @@ import Expect
 
 all : Test
 all =
-    Test.concat
-        [ testFindAll
-        , testFind
-        , testRoot
-        , testFirst
-        , testIndex
-        , testChildren
-        ]
+    let
+        html =
+            [ htmlOutput, lazyOutput ]
+    in
+        Test.concat <|
+            List.concatMap (\f -> List.map f html)
+                [ testFindAll
+                , testFind
+                , testRoot
+                , testFirst
+                , testIndex
+                , testChildren
+                ]
 
 
-testRoot : Test
-testRoot =
+testRoot : Single -> Test
+testRoot output =
     describe "root query without find or findAll"
         [ describe "finds itself" <|
             [ test "sees it's a <section class='root'>" <|
@@ -43,8 +49,8 @@ testRoot =
         ]
 
 
-testFind : Test
-testFind =
+testFind : Single -> Test
+testFind output =
     describe "Query.find []"
         [ describe "finds the one child" <|
             [ test "sees it's a <div class='container'>" <|
@@ -69,8 +75,8 @@ testFind =
         ]
 
 
-testFindAll : Test
-testFindAll =
+testFindAll : Single -> Test
+testFindAll output =
     describe "Query.findAll []"
         [ describe "finds the one child" <|
             [ test "and only the one child" <|
@@ -111,8 +117,8 @@ testFindAll =
             , test "with tag selectors that return one match at the end" <|
                 \() ->
                     output
-                        |> Query.findAll [ tag "footer" ]
-                        |> Query.count (Expect.equal 1)
+                        |> Query.find [ tag "footer" ]
+                        |> Query.has [ text "this is the footer" ]
             , test "sees the nested div" <|
                 \() ->
                     output
@@ -122,8 +128,8 @@ testFindAll =
         ]
 
 
-testFirst : Test
-testFirst =
+testFirst : Single -> Test
+testFirst output =
     describe "Query.first"
         [ describe "finds the one child" <|
             [ test "sees it's a <div class='container'>" <|
@@ -136,8 +142,8 @@ testFirst =
         ]
 
 
-testIndex : Test
-testIndex =
+testIndex : Single -> Test
+testIndex output =
     describe "Query.index"
         [ describe "Query.index 0" <|
             [ test "sees it's a <div class='container'>" <|
@@ -158,8 +164,8 @@ testIndex =
         ]
 
 
-testChildren : Test
-testChildren =
+testChildren : Single -> Test
+testChildren output =
     describe "Query.children"
         [ describe "on the root" <|
             [ test "sees the root has one child" <|
@@ -181,9 +187,14 @@ testChildren =
         ]
 
 
-output : Single
-output =
+htmlOutput : Single
+htmlOutput =
     Query.fromHtml sampleHtml
+
+
+lazyOutput : Single
+lazyOutput =
+    Query.fromHtml sampleLazyHtml
 
 
 sampleHtml : Html msg
@@ -206,5 +217,29 @@ sampleHtml =
             , section []
                 [ div [ Attr.class "nested-div" ] [ Html.text "boring section" ] ]
             , footer [] [ Html.text "this is the footer" ]
+            ]
+        ]
+
+
+sampleLazyHtml : Html msg
+sampleLazyHtml =
+    section [ Attr.class "root" ]
+        [ div [ Attr.class "container" ]
+            [ header [ Attr.class "funky themed", Attr.id "heading" ]
+                [ Lazy.lazy (\str -> a [ href "http://elm-lang.org" ] [ Html.text str ]) "home"
+                , Lazy.lazy (\str -> a [ href "http://elm-lang.org/examples" ] [ Html.text str ]) "examples"
+                , Lazy.lazy (\str -> a [ href "http://elm-lang.org/docs" ] [ Html.text str ]) "docs"
+                ]
+            , section [ Attr.class "funky themed", Attr.id "section" ]
+                [ ul [ Attr.class "some-list" ]
+                    [ Lazy.lazy (\str -> li [ Attr.class "list-item themed" ] [ Html.text str ]) "first item"
+                    , Lazy.lazy (\str -> li [ Attr.class "list-item themed" ] [ Html.text str ]) "second item"
+                    , Lazy.lazy (\str -> li [ Attr.class "list-item themed selected" ] [ Html.text str ]) "third item"
+                    , Lazy.lazy (\str -> li [ Attr.class "list-item themed" ] [ Html.text str ]) "fourth item"
+                    ]
+                ]
+            , section []
+                [ div [ Attr.class "nested-div" ] [ Html.text "boring section" ] ]
+            , footer [] [ Lazy.lazy2 (\a b -> Html.text <| a ++ b) "this is " "the footer" ]
             ]
         ]
