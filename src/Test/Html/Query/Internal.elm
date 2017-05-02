@@ -466,3 +466,46 @@ showSelectorOutcomeInverse elmHtmlList selector =
                     "✗"
     in
         String.join " " [ outcome, "has not", selectorToString selector ]
+
+
+
+-- HELPERS --
+
+
+failWithQuery : Bool -> String -> Query -> Expectation -> Expectation
+failWithQuery showTrace queryName query expectation =
+    case Expect.getFailure expectation of
+        Just { given, message } ->
+            let
+                lines =
+                    toLines message query queryName
+                        |> List.map prefixOutputLine
+
+                tracedLines =
+                    if showTrace then
+                        addQueryFromHtmlLine query :: lines
+                    else
+                        lines
+            in
+                tracedLines
+                    |> String.join "\n\n\n"
+                    |> Expect.fail
+
+        Nothing ->
+            expectation
+
+
+addQueryFromHtmlLine : Query -> String
+addQueryFromHtmlLine query =
+    String.join "\n\n"
+        [ prefixOutputLine "Query.fromHtml"
+        , toOutputLine query
+            |> String.split "\n"
+            |> List.map ((++) baseIndentation)
+            |> String.join "\n"
+        ]
+
+
+prefixOutputLine : String -> String
+prefixOutputLine =
+    (++) "▼ "

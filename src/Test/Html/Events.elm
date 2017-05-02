@@ -2,6 +2,7 @@ module Test.Html.Events
     exposing
         ( Event(..)
         , simulate
+        , expectEvent
         )
 
 {-|
@@ -9,7 +10,7 @@ module Test.Html.Events
 This module allows you to simulate events on Html nodes, the Msg generated
 by the event is returned so you can test it
 
-@docs Event, simulate
+@docs Event, simulate, expectEvent
 
 -}
 
@@ -20,6 +21,11 @@ import Json.Encode exposing (bool, encode, object, string)
 import Native.HtmlAsJson
 import Test.Html.Query as Query
 import Test.Html.Query.Internal as QueryInternal
+import Expect exposing (Expectation)
+
+
+type EventNode
+    = EventNode Event QueryInternal.Single
 
 
 {-| Event constructors to simulate events
@@ -54,17 +60,51 @@ type Event
                 |> Expect.equal (Ok <| Change "cats")
 
 -}
-simulate : Event -> Query.Single -> Result String msg
-simulate event (QueryInternal.Single showTrace query) =
+simulate : Event -> Query.Single -> EventNode
+simulate event single =
+    EventNode event single
+
+
+{-| Passes if given event equals the triggered event
+
+    type Msg
+        = Change String
+
+    test "Input produces expected Msg" <|
+        \() ->
+            Html.input [ onInput Change ] [ ]
+                |> Query.fromHtml
+                |> Events.simulate (Input "cats")
+                |> Expect.equal (Ok <| Change "cats")
+
+-}
+expectEvent : msg -> EventNode -> Expectation
+expectEvent msg (EventNode event (QueryInternal.Single showTrace query)) =
     let
         ( eventName, jsEvent ) =
             rawEvent event
+
+        node =
+            QueryInternal.traverse query
+                |> Result.andThen (QueryInternal.verifySingle eventName)
+                |> Result.mapError (QueryInternal.queryErrorToString query)
     in
-        QueryInternal.traverse query
-            |> Result.andThen (QueryInternal.verifySingle eventName)
-            |> Result.mapError (QueryInternal.queryErrorToString query)
-            |> Result.andThen (findEvent eventName)
-            |> Result.andThen (\decoder -> decodeString decoder jsEvent)
+        case node of
+            Err msg ->
+                Expect.fail msg
+                    |> QueryInternal.failWithQuery showTrace ("Query.find") query
+
+            Ok single ->
+                case findEvent eventName single of
+                    Err noEvent ->
+                        Expect.fail noEvent
+                            |> QueryInternal.failWithQuery showTrace "" query
+
+                    Ok foundEvent ->
+                        decodeString foundEvent jsEvent
+                            |> Result.map (\foundMsg -> Expect.equal msg foundMsg)
+                            |> Result.withDefault (Expect.fail "Failed to decode string")
+                            |> QueryInternal.failWithQuery showTrace ("Event.expectEvent: Expected the msg \x1B[32m" ++ toString msg ++ "\x1B[39m from the event \x1B[31m" ++ toString event ++ "\x1B[39m but could not find the event.") query
 
 
 rawEvent : Event -> ( String, String )
@@ -138,7 +178,7 @@ findEvent eventName element =
                 |> Dict.get eventName
                 |> Maybe.map eventDecoder
                 |> Maybe.map (tagEventDecoder node)
-                |> Result.fromMaybe (elementOutput ++ " has no " ++ eventName ++ " event")
+                |> Result.fromMaybe ("Events.expectEvent: The event \x1B[32m" ++ eventName ++ "\x1B[39m does not exist on the found node.\n\n" ++ elementOutput)
     in
         case element of
             TextTag _ ->

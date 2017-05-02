@@ -29,7 +29,7 @@ module Test.Html.Query
 
 import Html exposing (Html)
 import Test.Html.Selector.Internal as Selector exposing (Selector, selectorToString)
-import Test.Html.Query.Internal as Internal exposing (QueryError(..))
+import Test.Html.Query.Internal as Internal exposing (QueryError(..), failWithQuery)
 import Html.Inert as Inert
 import Expect exposing (Expectation)
 
@@ -371,46 +371,3 @@ each : (Single -> Expectation) -> Multiple -> Expectation
 each check (Internal.Multiple showTrace query) =
     Internal.expectAll check query
         |> failWithQuery showTrace "Query.each" query
-
-
-
--- HELPERS --
-
-
-failWithQuery : Bool -> String -> Internal.Query -> Expectation -> Expectation
-failWithQuery showTrace queryName query expectation =
-    case Expect.getFailure expectation of
-        Just { given, message } ->
-            let
-                lines =
-                    Internal.toLines message query queryName
-                        |> List.map prefixOutputLine
-
-                tracedLines =
-                    if showTrace then
-                        addQueryFromHtmlLine query :: lines
-                    else
-                        lines
-            in
-                tracedLines
-                    |> String.join "\n\n\n"
-                    |> Expect.fail
-
-        Nothing ->
-            expectation
-
-
-addQueryFromHtmlLine : Internal.Query -> String
-addQueryFromHtmlLine query =
-    String.join "\n\n"
-        [ prefixOutputLine "Query.fromHtml"
-        , Internal.toOutputLine query
-            |> String.split "\n"
-            |> List.map ((++) Internal.baseIndentation)
-            |> String.join "\n"
-        ]
-
-
-prefixOutputLine : String -> String
-prefixOutputLine =
-    (++) "▼ "

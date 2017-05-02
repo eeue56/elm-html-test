@@ -21,46 +21,46 @@ all =
                     |> Query.findAll [ tag "button" ]
                     |> Query.first
                     |> Events.simulate Click
-                    |> Expect.equal (Ok SampleMsg)
+                    |> Events.expectEvent SampleMsg
         , test "returns msg for click on lazy html" <|
             \() ->
                 Query.fromHtml sampleLazyHtml
                     |> Query.findAll [ tag "button" ]
                     |> Query.first
                     |> Events.simulate Click
-                    |> Expect.equal (Ok SampleMsg)
+                    |> Events.expectEvent SampleMsg
         , test "returns msg for click on mapped html" <|
             \() ->
                 Query.fromHtml sampleMappedHtml
                     |> Query.findAll [ tag "button" ]
                     |> Query.first
                     |> Events.simulate Click
-                    |> Expect.equal (Ok MappedSampleMsg)
+                    |> Events.expectEvent MappedSampleMsg
         , test "returns msg for click on deep mapped html" <|
             \() ->
                 Query.fromHtml deepMappedHtml
                     |> Query.findAll [ tag "input" ]
                     |> Query.first
                     |> Events.simulate (Input "foo")
-                    |> Expect.equal (Ok (SampleInputMsg "foobar"))
+                    |> Events.expectEvent (SampleInputMsg "foobar")
         , test "returns msg for input with transformation" <|
             \() ->
                 input [ onInput (String.toUpper >> SampleInputMsg) ] []
                     |> Query.fromHtml
                     |> Events.simulate (Input "cats")
-                    |> Expect.equal (Ok <| SampleInputMsg "CATS")
+                    |> Events.expectEvent (SampleInputMsg "CATS")
         , test "returns msg for check event" <|
             \() ->
                 input [ onCheck SampleCheckedMsg ] []
                     |> Query.fromHtml
                     |> Events.simulate (Check True)
-                    |> Expect.equal (Ok <| SampleCheckedMsg True)
+                    |> Events.expectEvent (SampleCheckedMsg True)
         , test "returns msg for custom event" <|
             \() ->
                 input [ on "keyup" (Json.Decode.map SampleKeyUpMsg keyCode) ] []
                     |> Query.fromHtml
                     |> Events.simulate (CustomEvent "keyup" "{\"keyCode\": 5}")
-                    |> Expect.equal (Ok <| SampleKeyUpMsg 5)
+                    |> Events.expectEvent (SampleKeyUpMsg 5)
         , testEvent onDoubleClick DoubleClick
         , testEvent onMouseDown MouseDown
         , testEvent onMouseUp MouseUp
@@ -126,4 +126,4 @@ testEvent testOn event =
             input [ testOn SampleMsg ] []
                 |> Query.fromHtml
                 |> Events.simulate event
-                |> Expect.equal (Ok SampleMsg)
+                |> Events.expectEvent SampleMsg
