@@ -25,7 +25,7 @@ import Test.Html.Query.Internal as QueryInternal
 import Expect exposing (Expectation)
 
 
-type EventNode
+type EventNode msg
     = EventNode Event QueryInternal.Single
 
 
@@ -61,7 +61,7 @@ type Event
                 |> Expect.expectEvent (Change "cats")
 
 -}
-simulate : Event -> Query.Single -> EventNode
+simulate : Event -> Query.Single -> EventNode msg
 simulate event single =
     EventNode event single
 
@@ -79,33 +79,17 @@ simulate event single =
                 |> Expect.expectEvent (Change "cats")
 
 -}
-expectEvent : msg -> EventNode -> Expectation
+expectEvent : msg -> EventNode msg -> Expectation
 expectEvent msg (EventNode event (QueryInternal.Single showTrace query)) =
-    let
-        ( eventName, jsEvent ) =
-            rawEvent event
+    case eventResult (EventNode event (QueryInternal.Single showTrace query)) of
+        Err noEvent ->
+            Expect.fail noEvent
+                |> QueryInternal.failWithQuery showTrace "" query
 
-        node =
-            QueryInternal.traverse query
-                |> Result.andThen (QueryInternal.verifySingle eventName)
-                |> Result.mapError (QueryInternal.queryErrorToString query)
-    in
-        case node of
-            Err msg ->
-                Expect.fail msg
-                    |> QueryInternal.failWithQuery showTrace ("Query.find") query
-
-            Ok single ->
-                case findEvent eventName single of
-                    Err noEvent ->
-                        Expect.fail noEvent
-                            |> QueryInternal.failWithQuery showTrace "" query
-
-                    Ok foundEvent ->
-                        decodeString foundEvent jsEvent
-                            |> Result.map (\foundMsg -> Expect.equal msg foundMsg)
-                            |> Result.withDefault (Expect.fail "Failed to decode string")
-                            |> QueryInternal.failWithQuery showTrace ("Event.expectEvent: Expected the msg \x1B[32m" ++ toString msg ++ "\x1B[39m from the event \x1B[31m" ++ toString event ++ "\x1B[39m but could not find the event.") query
+        Ok foundMsg ->
+            foundMsg
+                |> Expect.equal msg
+                |> QueryInternal.failWithQuery showTrace ("Event.expectEvent: Expected the msg \x1B[32m" ++ toString msg ++ "\x1B[39m from the event \x1B[31m" ++ toString event ++ "\x1B[39m but could not find the event.") query
 
 
 {-| Returns a Result with the Msg produced by the event simulated on a node
@@ -115,10 +99,11 @@ expectEvent msg (EventNode event (QueryInternal.Single showTrace query)) =
           Html.input [ onInput Change ] [ ]
               |> Query.fromHtml
               |> Events.simulate (Input "cats")
+              |> Events.eventResult
               |> Expect.equal (Ok <| Change "cats")
 -}
-eventResult : Event -> Query.Single -> Result String msg
-eventResult event (QueryInternal.Single showTrace query) =
+eventResult : EventNode msg -> Result String msg
+eventResult (EventNode event (QueryInternal.Single showTrace query)) =
     let
         ( eventName, jsEvent ) =
             rawEvent event
@@ -135,6 +120,7 @@ eventResult event (QueryInternal.Single showTrace query) =
             Ok single ->
                 findEvent eventName single
                     |> Result.andThen (\foundEvent -> decodeString foundEvent jsEvent)
+                    |> Result.mapError (\_ -> "Failed to decode string")
 
 
 rawEvent : Event -> ( String, String )

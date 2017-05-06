@@ -70,6 +70,13 @@ all =
         , testEvent onSubmit Submit
         , testEvent onBlur Blur
         , testEvent onFocus Focus
+        , test "event result" <|
+            \() ->
+                Query.fromHtml sampleHtml
+                    |> Query.find [ tag "button" ]
+                    |> Events.simulate Click
+                    |> Events.eventResult
+                    |> Expect.equal (Ok SampleMsg)
         ]
 
 
