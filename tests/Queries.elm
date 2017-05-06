@@ -26,7 +26,7 @@ all =
                 ]
 
 
-testRoot : Single -> Test
+testRoot : Single msg -> Test
 testRoot output =
     describe "root query without find or findAll"
         [ describe "finds itself" <|
@@ -49,7 +49,7 @@ testRoot output =
         ]
 
 
-testFind : Single -> Test
+testFind : Single msg -> Test
 testFind output =
     describe "Query.find []"
         [ describe "finds the one child" <|
@@ -75,7 +75,7 @@ testFind output =
         ]
 
 
-testFindAll : Single -> Test
+testFindAll : Single msg -> Test
 testFindAll output =
     describe "Query.findAll []"
         [ describe "finds the one child" <|
@@ -128,7 +128,7 @@ testFindAll output =
         ]
 
 
-testFirst : Single -> Test
+testFirst : Single msg -> Test
 testFirst output =
     describe "Query.first"
         [ describe "finds the one child" <|
@@ -142,7 +142,7 @@ testFirst output =
         ]
 
 
-testIndex : Single -> Test
+testIndex : Single msg -> Test
 testIndex output =
     describe "Query.index"
         [ describe "Query.index 0" <|
@@ -164,7 +164,7 @@ testIndex output =
         ]
 
 
-testChildren : Single -> Test
+testChildren : Single msg -> Test
 testChildren output =
     describe "Query.children"
         [ describe "on the root" <|
@@ -187,12 +187,12 @@ testChildren output =
         ]
 
 
-htmlOutput : Single
+htmlOutput : Single msg
 htmlOutput =
     Query.fromHtml sampleHtml
 
 
-lazyOutput : Single
+lazyOutput : Single msg
 lazyOutput =
     Query.fromHtml sampleLazyHtml
 

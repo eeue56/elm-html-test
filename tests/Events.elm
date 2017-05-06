@@ -126,7 +126,7 @@ deepMappedHtml =
         ]
 
 
-testEvent : (Msg -> Html.Attribute msg) -> Event -> Test
+testEvent : (Msg -> Html.Attribute Msg) -> Event -> Test
 testEvent testOn event =
     test ("returns msg for " ++ (toString event) ++ " event") <|
         \() ->

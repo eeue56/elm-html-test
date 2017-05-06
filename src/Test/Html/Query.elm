@@ -58,16 +58,16 @@ import Expect exposing (Expectation)
 
 Contrast with [`Multiple`](#Multiple).
 -}
-type alias Single =
-    Internal.Single
+type alias Single msg =
+    Internal.Single msg
 
 
 {-| A query that may find any number of elements, including zero.
 
 Contrast with [`Single`](#Single).
 -}
-type alias Multiple =
-    Internal.Multiple
+type alias Multiple msg =
+    Internal.Multiple msg
 
 
 {-| Translate a `Html` value into a `Single` query. This is how queries
@@ -85,7 +85,7 @@ typically begin.
                 |> Query.fromHtml
                 |> Query.has [ text "I'm a button!" ]
 -}
-fromHtml : Html msg -> Single
+fromHtml : Html msg -> Single msg
 fromHtml html =
     Internal.Query (Inert.fromHtml html) []
         |> Internal.Single True
@@ -118,7 +118,7 @@ fromHtml html =
                 |> Query.findAll [ tag "li" ]
                 |> Query.count (Expect.equal 3)
 -}
-findAll : List Selector -> Single -> Multiple
+findAll : List Selector -> Single msg -> Multiple msg
 findAll selectors (Internal.Single showTrace query) =
     Internal.FindAll selectors
         |> Internal.prependSelector query
@@ -148,7 +148,7 @@ findAll selectors (Internal.Single showTrace query) =
                 |> Query.children []
                 |> Query.each (Query.has [ tag "li" ])
 -}
-children : List Selector -> Single -> Multiple
+children : List Selector -> Single msg -> Multiple msg
 children selectors (Internal.Single showTrace query) =
     Internal.Children selectors
         |> Internal.prependSelector query
@@ -178,7 +178,7 @@ If no descendants match, or if more than one matches, the test will fail.
                 |> Query.find [ tag "ul" ]
                 |> Query.has [ classes [ "items", "active" ] ]
 -}
-find : List Selector -> Single -> Single
+find : List Selector -> Single msg -> Single msg
 find selectors (Internal.Single showTrace query) =
     Internal.Find selectors
         |> Internal.prependSelector query
@@ -211,7 +211,7 @@ will fail.
                 |> Query.first
                 |> Query.has [ text "first item" ]
 -}
-first : Multiple -> Single
+first : Multiple msg -> Single msg
 first (Internal.Multiple showTrace query) =
     Internal.First
         |> Internal.prependSelector query
@@ -248,7 +248,7 @@ If the index falls outside the bounds of the match, the test will fail.
                 |> Query.index 1
                 |> Query.has [ text "second item" ]
 -}
-index : Int -> Multiple -> Single
+index : Int -> Multiple msg -> Single msg
 index position (Internal.Multiple showTrace query) =
     Internal.Index position
         |> Internal.prependSelector query
@@ -281,7 +281,7 @@ index position (Internal.Multiple showTrace query) =
                 |> Query.findAll [ tag "li" ]
                 |> Query.count (Expect.equal 3)
 -}
-count : (Int -> Expectation) -> Multiple -> Expectation
+count : (Int -> Expectation) -> Multiple msg -> Expectation
 count expect ((Internal.Multiple showTrace query) as multiple) =
     (List.length >> expect >> failWithQuery showTrace "Query.count" query)
         |> Internal.multipleToExpectation multiple
@@ -309,7 +309,7 @@ count expect ((Internal.Multiple showTrace query) as multiple) =
                 |> Query.find [ tag "ul" ]
                 |> Query.has [ tag "ul", classes [ "items", "active" ] ]
 -}
-has : List Selector -> Single -> Expectation
+has : List Selector -> Single msg -> Expectation
 has selectors (Internal.Single showTrace query) =
     Internal.has selectors query
         |> failWithQuery showTrace ("Query.has " ++ Internal.joinAsList selectorToString selectors) query
@@ -331,7 +331,7 @@ has selectors (Internal.Single showTrace query) =
                 |> Query.find [ tag "div" ]
                 |> Query.hasNot [ tag "div", class "progress-bar" ]
 -}
-hasNot : List Selector -> Single -> Expectation
+hasNot : List Selector -> Single msg -> Expectation
 hasNot selectors (Internal.Single showTrace query) =
     let
         queryName =
@@ -367,7 +367,7 @@ hasNot selectors (Internal.Single showTrace query) =
                     , Query.has [ classes [ "items", "active" ] ]
                     ]
 -}
-each : (Single -> Expectation) -> Multiple -> Expectation
+each : (Single msg -> Expectation) -> Multiple msg -> Expectation
 each check (Internal.Multiple showTrace query) =
     Internal.expectAll check query
         |> failWithQuery showTrace "Query.each" query

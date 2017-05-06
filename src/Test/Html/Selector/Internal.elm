@@ -41,7 +41,7 @@ selectorToString criteria =
             "text " ++ toString text
 
 
-queryAll : List Selector -> List ElmHtml -> List ElmHtml
+queryAll : List Selector -> List (ElmHtml msg) -> List (ElmHtml msg)
 queryAll selectors list =
     case selectors of
         [] ->
@@ -52,7 +52,7 @@ queryAll selectors list =
                 |> queryAllChildren rest
 
 
-queryAllChildren : List Selector -> List ElmHtml -> List ElmHtml
+queryAllChildren : List Selector -> List (ElmHtml msg) -> List (ElmHtml msg)
 queryAllChildren selectors list =
     case selectors of
         [] ->
@@ -64,11 +64,11 @@ queryAllChildren selectors list =
 
 
 query :
-    (ElmHtml.Query.Selector -> ElmHtml -> List ElmHtml)
-    -> (List Selector -> List ElmHtml -> List ElmHtml)
+    (ElmHtml.Query.Selector -> ElmHtml msg -> List (ElmHtml msg))
+    -> (List Selector -> List (ElmHtml msg) -> List (ElmHtml msg))
     -> Selector
-    -> List ElmHtml
-    -> List ElmHtml
+    -> List (ElmHtml msg)
+    -> List (ElmHtml msg)
 query fn fnAll selector list =
     case selector of
         All selectors ->
