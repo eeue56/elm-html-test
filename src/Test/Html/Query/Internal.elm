@@ -3,6 +3,7 @@ module Test.Html.Query.Internal exposing (..)
 import Test.Html.Selector.Internal as InternalSelector exposing (Selector, selectorToString)
 import Html.Inert as Inert exposing (Node)
 import ElmHtml.InternalTypes exposing (ElmHtml(..))
+import ElmHtml.Query
 import ElmHtml.ToString exposing (nodeToStringWithOptions)
 import Expect exposing (Expectation)
 
@@ -114,7 +115,7 @@ toLinesHelp expectationFailure elmHtmlList selectorQueries queryName results =
                         let
                             elements =
                                 elmHtmlList
-                                    |> InternalSelector.queryAllChildren selectors
+                                    |> InternalSelector.queryOnlyChildren selectors
                         in
                             ("Query.children " ++ joinAsList selectorToString selectors)
                                 |> withHtmlContext (getHtmlContext elements)
@@ -284,7 +285,7 @@ traverseSelector selectorQuery elmHtmlList =
 
         Children selectors ->
             elmHtmlList
-                |> InternalSelector.queryAllChildren selectors
+                |> InternalSelector.queryOnlyChildren selectors
                 |> Ok
 
         First ->
