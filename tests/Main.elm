@@ -6,6 +6,7 @@ import Json.Encode exposing (Value)
 import TestExample
 import Queries
 import Events
+import Descendant
 
 
 main : TestProgram
@@ -13,6 +14,7 @@ main =
     [ TestExample.all
     , Queries.all
     , Events.all
+    , Descendant.all
     ]
         |> Test.concat
         |> run emit

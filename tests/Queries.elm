@@ -45,6 +45,10 @@ testRoot output =
                 \() ->
                     output
                         |> Query.has [ classes [ "root" ] ]
+            , test "recognizes if is has a specific descendant" <|
+                \() ->
+                    output
+                        |> Query.contains [ someView "Such a title !" ]
             ]
         ]
 
@@ -71,6 +75,11 @@ testFind output =
                     output
                         |> Query.find []
                         |> Query.has [ classes [ "container" ] ]
+            , test "recognizes if is has a specific descendant" <|
+                \() ->
+                    output
+                        |> Query.find []
+                        |> Query.contains [ someView "Such a title !" ]
             ]
         ]
 
@@ -206,6 +215,7 @@ sampleHtml =
                 , a [ href "http://elm-lang.org/examples" ] [ Html.text "examples" ]
                 , a [ href "http://elm-lang.org/docs" ] [ Html.text "docs" ]
                 ]
+            , someView "Such a title !"
             , section [ Attr.class "funky themed", Attr.id "section" ]
                 [ ul [ Attr.class "some-list" ]
                     [ li [ Attr.class "list-item themed" ] [ Html.text "first item" ]
@@ -230,6 +240,7 @@ sampleLazyHtml =
                 , Lazy.lazy (\str -> a [ href "http://elm-lang.org/examples" ] [ Html.text str ]) "examples"
                 , Lazy.lazy (\str -> a [ href "http://elm-lang.org/docs" ] [ Html.text str ]) "docs"
                 ]
+            , someView "Such a title !"
             , section [ Attr.class "funky themed", Attr.id "section" ]
                 [ ul [ Attr.class "some-list" ]
                     [ Lazy.lazy (\str -> li [ Attr.class "list-item themed" ] [ Html.text str ]) "first item"
@@ -243,3 +254,8 @@ sampleLazyHtml =
             , footer [] [ Lazy.lazy2 (\a b -> Html.text <| a ++ b) "this is " "the footer" ]
             ]
         ]
+
+
+someView : String -> Html msg
+someView str =
+    Html.h1 [] [ Html.text str ]

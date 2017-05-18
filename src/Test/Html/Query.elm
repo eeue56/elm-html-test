@@ -9,6 +9,7 @@ module Test.Html.Query
         , first
         , index
         , count
+        , contains
         , has
         , hasNot
         , each
@@ -24,7 +25,7 @@ module Test.Html.Query
 
 ## Expecting
 
-@docs count, has, hasNot, each
+@docs count, contains, has, hasNot, each
 -}
 
 import Html exposing (Html)
@@ -32,6 +33,7 @@ import Test.Html.Selector.Internal as Selector exposing (Selector, selectorToStr
 import Test.Html.Query.Internal as Internal exposing (QueryError(..), failWithQuery)
 import Html.Inert as Inert
 import Expect exposing (Expectation)
+import ElmHtml.InternalTypes exposing (ElmHtml)
 
 
 {- DESIGN NOTES:
@@ -285,6 +287,51 @@ count : (Int -> Expectation) -> Multiple msg -> Expectation
 count expect ((Internal.Multiple showTrace query) as multiple) =
     (List.length >> expect >> failWithQuery showTrace "Query.count" query)
         |> Internal.multipleToExpectation multiple
+
+
+{-| Expect the element to have at least one descendant matching
+
+    import Html exposing (div, ul, li)
+    import Html.Attributes exposing (class)
+    import Test.Html.Query as Query
+    import Test exposing (test)
+    import Test.Html.Selector exposing (tag, classes)
+
+
+    test "The list has two li: one with the text \"third item\" and \
+        another one with \"first item\"" <|
+        \() ->
+            div []
+                [ ul [ class "items active" ]
+                    [ li [] [ text "first item" ]
+                    , li [] [ text "second item" ]
+                    , li [] [ text "third item" ]
+                    ]
+                ]
+                |> Query.fromHtml
+                |> Query.contains
+                    [ li [] [ text "third item" ]
+                    , li [] [ text "first item" ]
+                    ]
+
+-}
+contains : List (Html msg) -> Single msg -> Expectation
+contains expectedHtml (Internal.Single showTrace query) =
+    let
+        expectedElmHtml =
+            List.map htmlToElm expectedHtml
+    in
+        Internal.contains
+            expectedElmHtml
+            query
+            |> failWithQuery showTrace "Query.contains" query
+
+
+htmlToElm : Html msg -> ElmHtml msg
+htmlToElm =
+    Inert.fromHtml >> Inert.toElmHtml
+
+
 
 
 {-| Expect the element to match all of the given selectors.
