@@ -120,7 +120,6 @@ eventResult (EventNode event (QueryInternal.Single showTrace query)) =
             Ok single ->
                 findEvent eventName single
                     |> Result.andThen (\foundEvent -> decodeString foundEvent jsEvent)
-                    |> Result.mapError (\_ -> "Failed to decode string")
 
 
 rawEvent : Event -> ( String, String )
