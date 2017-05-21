@@ -1,6 +1,7 @@
 module Test.Html.Events
     exposing
         ( Event(..)
+        , EventNode
         , simulate
         , expectEvent
         , eventResult
