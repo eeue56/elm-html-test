@@ -28,6 +28,7 @@ the beginning of the error message.
 We need to track this so that Query.each can turn it off. Otherwise you get
 fromHtml printed twice - once at the very top, then again for the nested
 expectation that Query.each delegated to.
+
 -}
 type Single msg
     = Single Bool (Query msg)
@@ -218,13 +219,14 @@ prependSelector (Query node selectors) selector =
 {-| This is a more efficient implementation of the following:
 
 list
-    |> Array.fromList
-    |> Array.get index
-    |> Maybe.map (\elem -> [ elem ])
-    |> Maybe.withDefault []
+|> Array.fromList
+|> Array.get index
+|> Maybe.map (\elem -> [ elem ])
+|> Maybe.withDefault []
 
 It also supports wraparound via negative indeces, e.g. passing -1 for an index
 gets you the last element.
+
 -}
 getElementAt : Int -> List a -> List a
 getElementAt index list =

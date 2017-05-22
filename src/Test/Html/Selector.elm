@@ -15,16 +15,18 @@ module Test.Html.Selector
         , disabled
         )
 
-{-|
-@docs Selector
+{-| @docs Selector
+
 
 ## General Selectors
 
 @docs tag, text, attribute, boolAttribute, all
 
+
 ## Attributes
 
 @docs id, class, classes, className, checked, selected, disabled
+
 -}
 
 import Test.Html.Selector.Internal as Internal exposing (..)
@@ -55,6 +57,7 @@ type alias Selector =
             Html.button [ Attr.class "btn btn-large" ] [ Html.text "Reply" ]
                 |> Query.fromHtml
                 |> Query.has [ replyBtnSelector ]
+
 -}
 all : List Selector -> Selector
 all =
@@ -80,6 +83,7 @@ To match the element's exact class attribute string, use [`className`](#classNam
             Html.button [ Attr.class "btn btn-large" ] [ Html.text "Reply" ]
                 |> Query.fromHtml
                 |> Query.has [ classes [ "btn", "btn-large" ] ]
+
 -}
 classes : List String -> Selector
 classes =
@@ -104,6 +108,7 @@ To match the element's exact class attribute string, use [`className`](#classNam
             Html.button [ Attr.class "btn btn-large" ] [ Html.text "Reply" ]
                 |> Query.fromHtml
                 |> Query.has [ class "btn-large" ]
+
 -}
 class : String -> Selector
 class =
@@ -128,6 +133,7 @@ attribute exactly.
             Html.button [ Attr.class "btn btn-large" ] [ Html.text "Reply" ]
                 |> Query.fromHtml
                 |> Query.has [ className "btn btn-large" ]
+
 -}
 className : String -> Selector
 className =
@@ -150,6 +156,7 @@ className =
                 |> Query.fromHtml
                 |> Query.find [ id "welcome" ]
                 |> Query.has [ text "Hello!" ]
+
 -}
 id : String -> Selector
 id =
@@ -172,6 +179,7 @@ id =
                 |> Query.fromHtml
                 |> Query.find [ tag "h1" ]
                 |> Query.has [ text "Hello!" ]
+
 -}
 tag : String -> Selector
 tag name =
@@ -199,6 +207,7 @@ For attributes with boolean values, such as `checked`, use [`boolAttribute`](#bo
                 |> Query.fromHtml
                 |> Query.find [ attribute "title" "greeting" ]
                 |> Query.has [ text "Hello!" ]
+
 -}
 attribute : String -> String -> Selector
 attribute name value =
@@ -227,6 +236,7 @@ For attributes with string values, such as `title`, use [`attribute`](#attribute
                 |> Query.fromHtml
                 |> Query.find [ boolAttribute "disabled" True ]
                 |> Query.has [ text "Reply" ]
+
 -}
 boolAttribute : String -> Bool -> Selector
 boolAttribute name value =
