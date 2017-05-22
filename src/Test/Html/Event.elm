@@ -1,4 +1,4 @@
-module Test.Html.Events
+module Test.Html.Event
     exposing
         ( Event(..)
         , EventNode
@@ -60,8 +60,8 @@ type Event
         \() ->
             Html.input [ onInput Change ] [ ]
                 |> Query.fromHtml
-                |> Events.simulate (Input "cats")
-                |> Events.expectEvent (Change "cats")
+                |> Event.simulate (Input "cats")
+                |> Event.expectEvent (Change "cats")
 
 -}
 simulate : Event -> Query.Single msg -> EventNode msg
@@ -78,8 +78,8 @@ simulate event single =
         \() ->
             Html.input [ onInput Change ] [ ]
                 |> Query.fromHtml
-                |> Events.simulate (Input "cats")
-                |> Events.expectEvent (Change "cats")
+                |> Event.simulate (Input "cats")
+                |> Event.expectEvent (Change "cats")
 
 -}
 expectEvent : msg -> EventNode msg -> Expectation
@@ -101,8 +101,8 @@ expectEvent msg (EventNode event (QueryInternal.Single showTrace query)) =
         \() ->
             Html.input [ onInput Change ] [ ]
                 |> Query.fromHtml
-                |> Events.simulate (Input "cats")
-                |> Events.eventResult
+                |> Event.simulate (Input "cats")
+                |> Event.eventResult
                 |> Expect.equal (Ok <| Change "cats")
 
 -}
@@ -195,7 +195,7 @@ findEvent eventName element =
         eventDecoder node =
             node.facts.events
                 |> Dict.get eventName
-                |> Result.fromMaybe ("Events.expectEvent: The event \x1B[32m" ++ eventName ++ "\x1B[39m does not exist on the found node.\n\n" ++ elementOutput)
+                |> Result.fromMaybe ("Event.expectEvent: The event \x1B[32m" ++ eventName ++ "\x1B[39m does not exist on the found node.\n\n" ++ elementOutput)
     in
         case element of
             TextTag _ ->
