@@ -1,16 +1,36 @@
 module Test.Html.Event
     exposing
-        ( Event(..)
-        , EventNode
+        ( Event
         , simulate
-        , expectEvent
-        , eventResult
+        , expect
+        , toResult
+        , click
+        , doubleClick
+        , mouseDown
+        , mouseUp
+        , mouseEnter
+        , mouseLeave
+        , mouseOver
+        , mouseOut
+        , input
+        , check
+        , submit
+        , blur
+        , focus
         )
 
 {-| This module allows you to simulate events on Html nodes, the Msg generated
-by the event is returned so you can test it
+by the event is returned so you can test it.
 
-@docs Event, EventNode, simulate, expectEvent, eventResult
+
+## Simulating Events
+
+@docs Event, simulate, expect, toResult
+
+
+## Event Builders
+
+@docs click, doubleClick, mouseDown, mouseUp, mouseEnter, mouseLeave, mouseOver, mouseOut, input, check, submit, blur, focus
 
 -}
 
@@ -28,63 +48,50 @@ import Expect exposing (Expectation)
 See [`simulate`](#simulate).
 
 -}
-type EventNode msg
-    = EventNode Event (QueryInternal.Single msg)
+type Event msg
+    = Event ( String, String ) (QueryInternal.Single msg)
 
 
-{-| Event constructors to simulate events
--}
-type Event
-    = Click
-    | DoubleClick
-    | MouseDown
-    | MouseUp
-    | MouseEnter
-    | MouseLeave
-    | MouseOver
-    | MouseOut
-    | Input String
-    | Check Bool
-    | Submit
-    | Blur
-    | Focus
-    | CustomEvent String String
+{-| Simulate an event on a node.
 
-
-{-| Simulates an event on a node
+    import Test.Html.Event as Event
 
     type Msg
         = Change String
+
 
     test "Input produces expected Msg" <|
         \() ->
             Html.input [ onInput Change ] [ ]
                 |> Query.fromHtml
-                |> Event.simulate (Input "cats")
-                |> Event.expectEvent (Change "cats")
+                |> Event.simulate (Event.input "cats")
+                |> Event.expect (Change "cats")
 
 -}
-simulate : Event -> Query.Single msg -> EventNode msg
+simulate : ( String, String ) -> Query.Single msg -> Event msg
 simulate event single =
-    EventNode event single
+    Event event single
 
 
-{-| Passes if given event equals the triggered event
+{-| Passes if the given message is triggered by the simulated event.
+
+    import Test.Html.Event as Event
 
     type Msg
         = Change String
+
 
     test "Input produces expected Msg" <|
         \() ->
             Html.input [ onInput Change ] [ ]
                 |> Query.fromHtml
-                |> Event.simulate (Input "cats")
-                |> Event.expectEvent (Change "cats")
+                |> Event.simulate (Event.input "cats")
+                |> Event.expect (Change "cats")
 
 -}
-expectEvent : msg -> EventNode msg -> Expectation
-expectEvent msg (EventNode event (QueryInternal.Single showTrace query)) =
-    case eventResult (EventNode event (QueryInternal.Single showTrace query)) of
+expect : msg -> Event msg -> Expectation
+expect msg (Event event (QueryInternal.Single showTrace query)) =
+    case toResult (Event event (QueryInternal.Single showTrace query)) of
         Err noEvent ->
             Expect.fail noEvent
                 |> QueryInternal.failWithQuery showTrace "" query
@@ -95,23 +102,25 @@ expectEvent msg (EventNode event (QueryInternal.Single showTrace query)) =
                 |> QueryInternal.failWithQuery showTrace ("Event.expectEvent: Expected the msg \x1B[32m" ++ toString msg ++ "\x1B[39m from the event \x1B[31m" ++ toString event ++ "\x1B[39m but could not find the event.") query
 
 
-{-| Returns a Result with the Msg produced by the event simulated on a node
+{-| Returns a Result with the Msg produced by the event simulated on a node.
+Note that Event.expect gives nicer messages; this is generally more useful
+when testing that an event handler is *not* present.
+
+    import Test.Html.Event as Event
+
 
     test "Input produces expected Msg" <|
         \() ->
             Html.input [ onInput Change ] [ ]
                 |> Query.fromHtml
-                |> Event.simulate (Input "cats")
-                |> Event.eventResult
-                |> Expect.equal (Ok <| Change "cats")
+                |> Event.simulate (Event.input "cats")
+                |> Event.toResult
+                |> Expect.equal (Ok (Change "cats"))
 
 -}
-eventResult : EventNode msg -> Result String msg
-eventResult (EventNode event (QueryInternal.Single showTrace query)) =
+toResult : Event msg -> Result String msg
+toResult (Event ( eventName, jsEvent ) (QueryInternal.Single showTrace query)) =
     let
-        ( eventName, jsEvent ) =
-            rawEvent event
-
         node =
             QueryInternal.traverse query
                 |> Result.andThen (QueryInternal.verifySingle eventName)
@@ -126,64 +135,91 @@ eventResult (EventNode event (QueryInternal.Single showTrace query)) =
                     |> Result.andThen (\foundEvent -> decodeString foundEvent jsEvent)
 
 
-rawEvent : Event -> ( String, String )
-rawEvent event =
-    case event of
-        Click ->
-            ( "click", "{}" )
 
-        DoubleClick ->
-            ( "dblclick", "{}" )
+-- EVENTS --
 
-        MouseDown ->
-            ( "mousedown", "{}" )
 
-        MouseUp ->
-            ( "mouseup", "{}" )
+click : ( String, String )
+click =
+    ( "click", "{}" )
 
-        MouseEnter ->
-            ( "mouseenter", "{}" )
 
-        MouseLeave ->
-            ( "mouseleave", "{}" )
+doubleClick : ( String, String )
+doubleClick =
+    ( "dblclick", "{}" )
 
-        MouseOver ->
-            ( "mouseover", "{}" )
 
-        MouseOut ->
-            ( "mouseout", "{}" )
+mouseDown : ( String, String )
+mouseDown =
+    ( "mousedown", "{}" )
 
-        Input value ->
-            ( "input"
-            , object
-                [ ( "target"
-                  , object [ ( "value", string value ) ]
-                  )
-                ]
-                |> encode 0
-            )
 
-        Check checked ->
-            ( "change"
-            , object
-                [ ( "target"
-                  , object [ ( "checked", bool checked ) ]
-                  )
-                ]
-                |> encode 0
-            )
+mouseUp : ( String, String )
+mouseUp =
+    ( "mouseup", "{}" )
 
-        Submit ->
-            ( "submit", "{}" )
 
-        Blur ->
-            ( "blur", "{}" )
+mouseEnter : ( String, String )
+mouseEnter =
+    ( "mouseenter", "{}" )
 
-        Focus ->
-            ( "focus", "{}" )
 
-        CustomEvent name event ->
-            ( name, event )
+mouseLeave : ( String, String )
+mouseLeave =
+    ( "mouseleave", "{}" )
+
+
+mouseOver : ( String, String )
+mouseOver =
+    ( "mouseover", "{}" )
+
+
+mouseOut : ( String, String )
+mouseOut =
+    ( "mouseout", "{}" )
+
+
+input : String -> ( String, String )
+input value =
+    ( "input"
+    , object
+        [ ( "target"
+          , object [ ( "value", string value ) ]
+          )
+        ]
+        |> encode 0
+    )
+
+
+check : Bool -> ( String, String )
+check checked =
+    ( "change"
+    , object
+        [ ( "target"
+          , object [ ( "checked", bool checked ) ]
+          )
+        ]
+        |> encode 0
+    )
+
+
+submit : ( String, String )
+submit =
+    ( "submit", "{}" )
+
+
+blur : ( String, String )
+blur =
+    ( "blur", "{}" )
+
+
+focus : ( String, String )
+focus =
+    ( "focus", "{}" )
+
+
+
+-- INTERNAL --
 
 
 findEvent : String -> ElmHtml msg -> Result String (Json.Decode.Decoder msg)
