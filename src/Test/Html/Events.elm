@@ -7,9 +7,7 @@ module Test.Html.Events
         , eventResult
         )
 
-{-|
-
-This module allows you to simulate events on Html nodes, the Msg generated
+{-| This module allows you to simulate events on Html nodes, the Msg generated
 by the event is returned so you can test it
 
 @docs Event, simulate, expectEvent, eventResult
@@ -94,13 +92,14 @@ expectEvent msg (EventNode event (QueryInternal.Single showTrace query)) =
 
 {-| Returns a Result with the Msg produced by the event simulated on a node
 
-  test "Input produces expected Msg" <|
-      \() ->
-          Html.input [ onInput Change ] [ ]
-              |> Query.fromHtml
-              |> Events.simulate (Input "cats")
-              |> Events.eventResult
-              |> Expect.equal (Ok <| Change "cats")
+    test "Input produces expected Msg" <|
+        \() ->
+            Html.input [ onInput Change ] [ ]
+                |> Query.fromHtml
+                |> Events.simulate (Input "cats")
+                |> Events.eventResult
+                |> Expect.equal (Ok <| Change "cats")
+
 -}
 eventResult : EventNode msg -> Result String msg
 eventResult (EventNode event (QueryInternal.Single showTrace query)) =
