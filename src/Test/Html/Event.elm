@@ -195,7 +195,7 @@ findEvent eventName element =
         eventDecoder node =
             node.facts.events
                 |> Dict.get eventName
-                |> Result.fromMaybe ("Event.expectEvent: The event \x1B[32m" ++ eventName ++ "\x1B[39m does not exist on the found node.\n\n" ++ elementOutput)
+                |> Result.fromMaybe ("Event.expectEvent: The event " ++ eventName ++ " does not exist on the found node.\n\n" ++ elementOutput)
     in
         case element of
             TextTag _ ->
