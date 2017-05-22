@@ -58,7 +58,7 @@ type Event
             Html.input [ onInput Change ] [ ]
                 |> Query.fromHtml
                 |> Events.simulate (Input "cats")
-                |> Expect.expectEvent (Change "cats")
+                |> Events.expectEvent (Change "cats")
 
 -}
 simulate : Event -> Query.Single msg -> EventNode msg
@@ -76,7 +76,7 @@ simulate event single =
             Html.input [ onInput Change ] [ ]
                 |> Query.fromHtml
                 |> Events.simulate (Input "cats")
-                |> Expect.expectEvent (Change "cats")
+                |> Events.expectEvent (Change "cats")
 
 -}
 expectEvent : msg -> EventNode msg -> Expectation
