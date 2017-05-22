@@ -10,7 +10,7 @@ module Test.Html.Events
 {-| This module allows you to simulate events on Html nodes, the Msg generated
 by the event is returned so you can test it
 
-@docs Event, simulate, expectEvent, eventResult
+@docs Event, EventNode, simulate, expectEvent, eventResult
 
 -}
 
