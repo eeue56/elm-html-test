@@ -23,6 +23,11 @@ import Test.Html.Query.Internal as QueryInternal
 import Expect exposing (Expectation)
 
 
+{-| A simulated event.
+
+See [`simulate`](#simulate).
+
+-}
 type EventNode msg
     = EventNode Event (QueryInternal.Single msg)
 
