@@ -4,7 +4,7 @@ import ExampleApp exposing (Msg(..), exampleModel, view)
 import Expect
 import Json.Encode exposing (Value)
 import Test exposing (..)
-import Test.Html.Events as Events exposing (Event(..))
+import Test.Html.Event as Event
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (..)
 import Test.Runner.Node exposing (TestProgram, run)
