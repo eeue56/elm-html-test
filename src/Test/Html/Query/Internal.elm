@@ -5,6 +5,7 @@ import Html.Inert as Inert exposing (Node)
 import ElmHtml.InternalTypes exposing (ElmHtml(..))
 import ElmHtml.ToString exposing (nodeToStringWithOptions)
 import Expect exposing (Expectation)
+import Test.Html.Descendant as Descendant
 
 
 {-| Note: the selectors are stored in reverse order for better prepending perf.
@@ -403,6 +404,49 @@ queryErrorToString query error =
                 ++ " instead.\n\n\nHINT: If you actually expected "
                 ++ toString resultCount
                 ++ " elements, use Query.findAll instead of Query.find."
+
+
+contains : List (ElmHtml msg) -> Query msg -> Expectation
+contains expectedDescendants query =
+    case traverse query of
+        Ok elmHtmlList ->
+            let
+                missing =
+                    missingDescendants elmHtmlList expectedDescendants
+
+                prettyPrint missingDescendants =
+                    String.join
+                        "\n\n---------------------------------------------\n\n"
+                        (List.indexedMap
+                            (\index descendant -> printIndented 3 index descendant)
+                            missingDescendants
+                        )
+            in
+                if List.isEmpty missing then
+                    Expect.pass
+                else
+                    Expect.fail
+                        (String.join ""
+                            [ "\t✗ /"
+                            , toString <| List.length missing
+                            , "\\ missing descendants: \n\n"
+                            , prettyPrint missing
+                            ]
+                        )
+
+        Err error ->
+            Expect.fail (queryErrorToString query error)
+
+
+missingDescendants : List (ElmHtml msg) -> List (ElmHtml msg) -> List (ElmHtml msg)
+missingDescendants elmHtmlList expected =
+    let
+        isMissing =
+            \expectedDescendant ->
+                not <| Descendant.isDescendant elmHtmlList expectedDescendant
+    in
+            List.filter isMissing expected
+
 
 
 has : List Selector -> Query msg -> Expectation
