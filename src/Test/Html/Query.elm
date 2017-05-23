@@ -15,17 +15,20 @@ module Test.Html.Query
         , each
         )
 
-{-|
+{-| Querying HTML structure.
 
 @docs Single, Multiple, fromHtml
+
 
 ## Querying
 
 @docs find, findAll, children, first, index
 
+
 ## Expecting
 
 @docs count, contains, has, hasNot, each
+
 -}
 
 import Html exposing (Html)
@@ -59,6 +62,7 @@ import ElmHtml.InternalTypes exposing (ElmHtml)
 {-| A query that expects to find exactly one element.
 
 Contrast with [`Multiple`](#Multiple).
+
 -}
 type alias Single msg =
     Internal.Single msg
@@ -67,6 +71,7 @@ type alias Single msg =
 {-| A query that may find any number of elements, including zero.
 
 Contrast with [`Single`](#Single).
+
 -}
 type alias Multiple msg =
     Internal.Multiple msg
@@ -86,6 +91,7 @@ typically begin.
             Html.button [] [ Html.text "I'm a button!" ]
                 |> Query.fromHtml
                 |> Query.has [ text "I'm a button!" ]
+
 -}
 fromHtml : Html msg -> Single msg
 fromHtml html =
@@ -119,6 +125,7 @@ fromHtml html =
                 |> Query.fromHtml
                 |> Query.findAll [ tag "li" ]
                 |> Query.count (Expect.equal 3)
+
 -}
 findAll : List Selector -> Single msg -> Multiple msg
 findAll selectors (Internal.Single showTrace query) =
@@ -149,6 +156,7 @@ findAll selectors (Internal.Single showTrace query) =
                 |> Query.find [ tag "ul" ]
                 |> Query.children []
                 |> Query.each (Query.has [ tag "li" ])
+
 -}
 children : List Selector -> Single msg -> Multiple msg
 children selectors (Internal.Single showTrace query) =
@@ -179,6 +187,7 @@ If no descendants match, or if more than one matches, the test will fail.
                 |> Query.fromHtml
                 |> Query.find [ tag "ul" ]
                 |> Query.has [ classes [ "items", "active" ] ]
+
 -}
 find : List Selector -> Single msg -> Single msg
 find selectors (Internal.Single showTrace query) =
@@ -212,6 +221,7 @@ will fail.
                 |> Query.findAll [ tag "li" ]
                 |> Query.first
                 |> Query.has [ text "first item" ]
+
 -}
 first : Multiple msg -> Single msg
 first (Internal.Multiple showTrace query) =
@@ -249,6 +259,7 @@ If the index falls outside the bounds of the match, the test will fail.
                 |> Query.findAll [ tag "li" ]
                 |> Query.index 1
                 |> Query.has [ text "second item" ]
+
 -}
 index : Int -> Multiple msg -> Single msg
 index position (Internal.Multiple showTrace query) =
@@ -282,6 +293,7 @@ index position (Internal.Multiple showTrace query) =
                 |> Query.fromHtml
                 |> Query.findAll [ tag "li" ]
                 |> Query.count (Expect.equal 3)
+
 -}
 count : (Int -> Expectation) -> Multiple msg -> Expectation
 count expect ((Internal.Multiple showTrace query) as multiple) =
@@ -355,6 +367,7 @@ htmlToElm =
                 |> Query.fromHtml
                 |> Query.find [ tag "ul" ]
                 |> Query.has [ tag "ul", classes [ "items", "active" ] ]
+
 -}
 has : List Selector -> Single msg -> Expectation
 has selectors (Internal.Single showTrace query) =
@@ -377,6 +390,7 @@ has selectors (Internal.Single showTrace query) =
                 |> Query.fromHtml
                 |> Query.find [ tag "div" ]
                 |> Query.hasNot [ tag "div", class "progress-bar" ]
+
 -}
 hasNot : List Selector -> Single msg -> Expectation
 hasNot selectors (Internal.Single showTrace query) =
@@ -413,6 +427,7 @@ hasNot selectors (Internal.Single showTrace query) =
                     [ Query.has [ tag "ul" ]
                     , Query.has [ classes [ "items", "active" ] ]
                     ]
+
 -}
 each : (Single msg -> Expectation) -> Multiple msg -> Expectation
 each check (Internal.Multiple showTrace query) =

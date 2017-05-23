@@ -1,17 +1,16 @@
 module Test.Html.Events
     exposing
         ( Event(..)
+        , EventNode
         , simulate
         , expectEvent
         , eventResult
         )
 
-{-|
-
-This module allows you to simulate events on Html nodes, the Msg generated
+{-| This module allows you to simulate events on Html nodes, the Msg generated
 by the event is returned so you can test it
 
-@docs Event, simulate, expectEvent, eventResult
+@docs Event, EventNode, simulate, expectEvent, eventResult
 
 -}
 
@@ -24,6 +23,11 @@ import Test.Html.Query.Internal as QueryInternal
 import Expect exposing (Expectation)
 
 
+{-| A simulated event.
+
+See [`simulate`](#simulate).
+
+-}
 type EventNode msg
     = EventNode Event (QueryInternal.Single msg)
 
@@ -57,7 +61,7 @@ type Event
             Html.input [ onInput Change ] [ ]
                 |> Query.fromHtml
                 |> Events.simulate (Input "cats")
-                |> Expect.expectEvent (Change "cats")
+                |> Events.expectEvent (Change "cats")
 
 -}
 simulate : Event -> Query.Single msg -> EventNode msg
@@ -75,7 +79,7 @@ simulate event single =
             Html.input [ onInput Change ] [ ]
                 |> Query.fromHtml
                 |> Events.simulate (Input "cats")
-                |> Expect.expectEvent (Change "cats")
+                |> Events.expectEvent (Change "cats")
 
 -}
 expectEvent : msg -> EventNode msg -> Expectation
@@ -93,13 +97,14 @@ expectEvent msg (EventNode event (QueryInternal.Single showTrace query)) =
 
 {-| Returns a Result with the Msg produced by the event simulated on a node
 
-  test "Input produces expected Msg" <|
-      \() ->
-          Html.input [ onInput Change ] [ ]
-              |> Query.fromHtml
-              |> Events.simulate (Input "cats")
-              |> Events.eventResult
-              |> Expect.equal (Ok <| Change "cats")
+    test "Input produces expected Msg" <|
+        \() ->
+            Html.input [ onInput Change ] [ ]
+                |> Query.fromHtml
+                |> Events.simulate (Input "cats")
+                |> Events.eventResult
+                |> Expect.equal (Ok <| Change "cats")
+
 -}
 eventResult : EventNode msg -> Result String msg
 eventResult (EventNode event (QueryInternal.Single showTrace query)) =
@@ -119,7 +124,6 @@ eventResult (EventNode event (QueryInternal.Single showTrace query)) =
             Ok single ->
                 findEvent eventName single
                     |> Result.andThen (\foundEvent -> decodeString foundEvent jsEvent)
-                    |> Result.mapError (\_ -> "Failed to decode string")
 
 
 rawEvent : Event -> ( String, String )
