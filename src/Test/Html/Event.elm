@@ -19,8 +19,8 @@ module Test.Html.Event
         , focus
         )
 
-{-| This module allows you to simulate events on Html nodes, the Msg generated
-by the event is returned so you can test it.
+{-| This module lets you simulate events on `Html` values and expect that
+they result in certain `Msg` values being sent to `update`.
 
 
 ## Simulating Events
@@ -36,8 +36,8 @@ by the event is returned so you can test it.
 
 import Dict
 import ElmHtml.InternalTypes exposing (ElmHtml, ElmHtml(..), Tagger)
-import Json.Decode exposing (decodeString)
-import Json.Encode exposing (bool, encode, object, string)
+import Json.Decode as Decode exposing (Value, Decoder)
+import Json.Encode as Encode
 import Test.Html.Query as Query
 import Test.Html.Query.Internal as QueryInternal
 import Expect exposing (Expectation)
@@ -49,7 +49,7 @@ See [`simulate`](#simulate).
 
 -}
 type Event msg
-    = Event ( String, String ) (QueryInternal.Single msg)
+    = Event ( String, Value ) (QueryInternal.Single msg)
 
 
 {-| Simulate an event on a node.
@@ -68,9 +68,9 @@ type Event msg
                 |> Event.expect (Change "cats")
 
 -}
-simulate : ( String, String ) -> Query.Single msg -> Event msg
-simulate event single =
-    Event event single
+simulate : ( String, Value ) -> Query.Single msg -> Event msg
+simulate =
+    Event
 
 
 {-| Passes if the given message is triggered by the simulated event.
@@ -132,97 +132,127 @@ toResult (Event ( eventName, jsEvent ) (QueryInternal.Single showTrace query)) =
 
             Ok single ->
                 findEvent eventName single
-                    |> Result.andThen (\foundEvent -> decodeString foundEvent jsEvent)
+                    |> Result.andThen (\foundEvent -> Decode.decodeValue foundEvent jsEvent)
 
 
 
 -- EVENTS --
 
 
-click : ( String, String )
+{-| A [`click`](https://developer.mozilla.org/en-US/docs/Web/Events/click) event.
+-}
+click : ( String, Value )
 click =
-    ( "click", "{}" )
+    ( "click", emptyObject )
 
 
-doubleClick : ( String, String )
+{-| A [`dblclick`](https://developer.mozilla.org/en-US/docs/Web/Events/dblclick) event.
+-}
+doubleClick : ( String, Value )
 doubleClick =
-    ( "dblclick", "{}" )
+    ( "dblclick", emptyObject )
 
 
-mouseDown : ( String, String )
+{-| A [`mousedown`](https://developer.mozilla.org/en-US/docs/Web/Events/mousedown) event.
+-}
+mouseDown : ( String, Value )
 mouseDown =
-    ( "mousedown", "{}" )
+    ( "mousedown", emptyObject )
 
 
-mouseUp : ( String, String )
+{-| A [`mouseup`](https://developer.mozilla.org/en-US/docs/Web/Events/mouseup) event.
+-}
+mouseUp : ( String, Value )
 mouseUp =
-    ( "mouseup", "{}" )
+    ( "mouseup", emptyObject )
 
 
-mouseEnter : ( String, String )
+{-| A [`mouseenter`](https://developer.mozilla.org/en-US/docs/Web/Events/mouseenter) event.
+-}
+mouseEnter : ( String, Value )
 mouseEnter =
-    ( "mouseenter", "{}" )
+    ( "mouseenter", emptyObject )
 
 
-mouseLeave : ( String, String )
+{-| A [`mouseleave`](https://developer.mozilla.org/en-US/docs/Web/Events/mouseleave) event.
+-}
+mouseLeave : ( String, Value )
 mouseLeave =
-    ( "mouseleave", "{}" )
+    ( "mouseleave", emptyObject )
 
 
-mouseOver : ( String, String )
+{-| A [`mouseover`](https://developer.mozilla.org/en-US/docs/Web/Events/mouseover) event.
+-}
+mouseOver : ( String, Value )
 mouseOver =
-    ( "mouseover", "{}" )
+    ( "mouseover", emptyObject )
 
 
-mouseOut : ( String, String )
+{-| A [`mouseout`](https://developer.mozilla.org/en-US/docs/Web/Events/mouseout) event.
+-}
+mouseOut : ( String, Value )
 mouseOut =
-    ( "mouseout", "{}" )
+    ( "mouseout", emptyObject )
 
 
-input : String -> ( String, String )
+{-| An [`input`](https://developer.mozilla.org/en-US/docs/Web/Events/input) event.
+-}
+input : String -> ( String, Value )
 input value =
     ( "input"
-    , object
+    , Encode.object
         [ ( "target"
-          , object [ ( "value", string value ) ]
+          , Encode.object [ ( "value", Encode.string value ) ]
           )
         ]
-        |> encode 0
     )
 
 
-check : Bool -> ( String, String )
+{-| A [`change`](https://developer.mozilla.org/en-US/docs/Web/Events/change) event
+where `event.target.checked` is set to the given `Bool` value.
+-}
+check : Bool -> ( String, Value )
 check checked =
     ( "change"
-    , object
+    , Encode.object
         [ ( "target"
-          , object [ ( "checked", bool checked ) ]
+          , Encode.object [ ( "checked", Encode.bool checked ) ]
           )
         ]
-        |> encode 0
     )
 
 
-submit : ( String, String )
+{-| A [`submit`](https://developer.mozilla.org/en-US/docs/Web/Events/submit) event.
+-}
+submit : ( String, Value )
 submit =
-    ( "submit", "{}" )
+    ( "submit", emptyObject )
 
 
-blur : ( String, String )
+{-| A [`blur`](https://developer.mozilla.org/en-US/docs/Web/Events/blur) event.
+-}
+blur : ( String, Value )
 blur =
-    ( "blur", "{}" )
+    ( "blur", emptyObject )
 
 
-focus : ( String, String )
+{-| A [`focus`](https://developer.mozilla.org/en-US/docs/Web/Events/focus) event.
+-}
+focus : ( String, Value )
 focus =
-    ( "focus", "{}" )
+    ( "focus", emptyObject )
 
 
 
 -- INTERNAL --
 
 
-findEvent : String -> ElmHtml msg -> Result String (Json.Decode.Decoder msg)
+emptyObject : Value
+emptyObject =
+    Encode.object []
+
+
+findEvent : String -> ElmHtml msg -> Result String (Decoder msg)
 findEvent eventName element =
     let
         elementOutput =
