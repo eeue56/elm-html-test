@@ -15,7 +15,9 @@ module Test.Html.Selector
         , disabled
         )
 
-{-| @docs Selector
+{-| Selecting HTML elements.
+
+@docs Selector
 
 
 ## General Selectors

@@ -14,7 +14,9 @@ module Test.Html.Query
         , each
         )
 
-{-| @docs Single, Multiple, fromHtml
+{-| Querying HTML structure.
+
+@docs Single, Multiple, fromHtml
 
 
 ## Querying
