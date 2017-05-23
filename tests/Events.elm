@@ -5,7 +5,7 @@ import Html exposing (Html, button, div, input, text)
 import Html.Attributes as Attr exposing (href)
 import Html.Events exposing (..)
 import Html.Lazy as Lazy
-import Json.Decode
+import Json.Decode exposing (Value)
 import Json.Encode as Encode
 import Test exposing (..)
 import Test.Html.Event as Event exposing (Event)
@@ -60,7 +60,7 @@ all =
             \() ->
                 input [ on "keyup" (Json.Decode.map SampleKeyUpMsg keyCode) ] []
                     |> Query.fromHtml
-                    |> Event.simulate "keyup" (Encode.object [ ( "keyCode", Encode.int 5 ) ])
+                    |> Event.simulate ( "keyup", Encode.object [ ( "keyCode", Encode.int 5 ) ] )
                     |> Event.expect (SampleKeyUpMsg 5)
         , testEvent onDoubleClick Event.doubleClick
         , testEvent onMouseDown Event.mouseDown
@@ -127,9 +127,9 @@ deepMappedHtml =
         ]
 
 
-testEvent : (Msg -> Html.Attribute Msg) -> Event -> Test
-testEvent testOn event =
-    test ("returns msg for " ++ (toString event) ++ " event") <|
+testEvent : (Msg -> Html.Attribute Msg) -> ( String, Value ) -> Test
+testEvent testOn (( eventName, eventValue ) as event) =
+    test ("returns msg for " ++ eventName ++ "(" ++ toString eventValue ++ ") event") <|
         \() ->
             input [ testOn SampleMsg ] []
                 |> Query.fromHtml
