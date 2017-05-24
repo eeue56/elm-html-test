@@ -67,6 +67,33 @@ type Event msg
                 |> Event.simulate (Event.input "cats")
                 |> Event.expect (Change "cats")
 
+You can simulate custom events by passing a tuple containing the event name string and a
+`Value` representing the event object the browser would send to the event listener callback.
+
+    import Test.Html.Event as Event
+    import Json.Encode as Encode exposing (Value)
+
+
+    type Msg
+        = Change String
+
+
+    test "Input produces expected Msg" <|
+        \() ->
+            let
+                simulatedEventObject : Value
+                simulatedEventObject =
+                    Encode.object
+                        [ ( "target"
+                          , Encode.object [ ( "value", Encode.string "cats" ) ]
+                          )
+                        ]
+            in
+                Html.input [ onInput Change ] [ ]
+                    |> Query.fromHtml
+                    |> Event.simulate ( "input", simulatedEventObject )
+                    |> Event.expect (Change "cats")
+
 -}
 simulate : ( String, Value ) -> Query.Single msg -> Event msg
 simulate =
