@@ -9,7 +9,7 @@
     "exposed-modules": [
         "Test.Html.Selector",
         "Test.Html.Query",
-        "Test.Html.Event"
+        "Test.Html.Events"
     ],
     "native-modules": true,
     "dependencies": {
