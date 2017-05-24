@@ -6,6 +6,7 @@ import ElmHtml.InternalTypes exposing (ElmHtml(..))
 import ElmHtml.ToString exposing (nodeToStringWithOptions)
 import Expect exposing (Expectation)
 import Test.Html.Descendant as Descendant
+import Test.Runner
 
 
 {-| Note: the selectors are stored in reverse order for better prepending perf.
@@ -364,7 +365,7 @@ expectAllHelp successes check list =
                         |> Single False
                         |> check
             in
-                case Expect.getFailure expectation of
+                case Test.Runner.getFailure expectation of
                     Just { given, message } ->
                         let
                             prefix =
@@ -445,8 +446,7 @@ missingDescendants elmHtmlList expected =
             \expectedDescendant ->
                 not <| Descendant.isDescendant elmHtmlList expectedDescendant
     in
-            List.filter isMissing expected
-
+        List.filter isMissing expected
 
 
 has : List Selector -> Query msg -> Expectation
@@ -520,7 +520,7 @@ showSelectorOutcomeInverse elmHtmlList selector =
 
 failWithQuery : Bool -> String -> Query msg -> Expectation -> Expectation
 failWithQuery showTrace queryName query expectation =
-    case Expect.getFailure expectation of
+    case Test.Runner.getFailure expectation of
         Just { given, message } ->
             let
                 lines =

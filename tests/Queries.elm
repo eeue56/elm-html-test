@@ -9,21 +9,27 @@ import Test exposing (..)
 import Expect
 
 
-all : Test
-all =
-    let
-        html =
-            [ htmlOutput, lazyOutput ]
-    in
-        Test.concat <|
-            List.concatMap (\f -> List.map f html)
-                [ testFindAll
-                , testFind
-                , testRoot
-                , testFirst
-                , testIndex
-                , testChildren
-                ]
+htmlTests : Test
+htmlTests =
+    describe "Html" <|
+        List.map (\toTest -> toTest (Query.fromHtml sampleHtml)) testers
+
+
+lazyTests : Test
+lazyTests =
+    describe "lazy Html" <|
+        List.map (\toTest -> toTest (Query.fromHtml sampleLazyHtml)) testers
+
+
+testers : List (Single msg -> Test)
+testers =
+    [ testFindAll
+    , testFind
+    , testRoot
+    , testFirst
+    , testIndex
+    , testChildren
+    ]
 
 
 testRoot : Single msg -> Test
@@ -194,16 +200,6 @@ testChildren output =
                         |> Query.count (Expect.equal 1)
             ]
         ]
-
-
-htmlOutput : Single msg
-htmlOutput =
-    Query.fromHtml sampleHtml
-
-
-lazyOutput : Single msg
-lazyOutput =
-    Query.fromHtml sampleLazyHtml
 
 
 sampleHtml : Html msg
