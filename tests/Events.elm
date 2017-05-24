@@ -5,9 +5,10 @@ import Html exposing (Html, button, div, input, text)
 import Html.Attributes as Attr exposing (href)
 import Html.Events exposing (..)
 import Html.Lazy as Lazy
-import Json.Decode
+import Json.Decode exposing (Value)
+import Json.Encode as Encode
 import Test exposing (..)
-import Test.Html.Events as Events exposing (Event(..))
+import Test.Html.Event as Event exposing (Event)
 import Test.Html.Query as Query exposing (Single)
 import Test.Html.Selector exposing (tag)
 
@@ -20,62 +21,62 @@ all =
                 Query.fromHtml sampleHtml
                     |> Query.findAll [ tag "button" ]
                     |> Query.first
-                    |> Events.simulate Click
-                    |> Events.expectEvent SampleMsg
+                    |> Event.simulate Event.click
+                    |> Event.expect SampleMsg
         , test "returns msg for click on lazy html" <|
             \() ->
                 Query.fromHtml sampleLazyHtml
                     |> Query.findAll [ tag "button" ]
                     |> Query.first
-                    |> Events.simulate Click
-                    |> Events.expectEvent SampleMsg
+                    |> Event.simulate Event.click
+                    |> Event.expect SampleMsg
         , test "returns msg for click on mapped html" <|
             \() ->
                 Query.fromHtml sampleMappedHtml
                     |> Query.findAll [ tag "button" ]
                     |> Query.first
-                    |> Events.simulate Click
-                    |> Events.expectEvent MappedSampleMsg
+                    |> Event.simulate Event.click
+                    |> Event.expect MappedSampleMsg
         , test "returns msg for click on deep mapped html" <|
             \() ->
                 Query.fromHtml deepMappedHtml
                     |> Query.findAll [ tag "input" ]
                     |> Query.first
-                    |> Events.simulate (Input "foo")
-                    |> Events.expectEvent (SampleInputMsg "foobar")
+                    |> Event.simulate (Event.input "foo")
+                    |> Event.expect (SampleInputMsg "foobar")
         , test "returns msg for input with transformation" <|
             \() ->
                 input [ onInput (String.toUpper >> SampleInputMsg) ] []
                     |> Query.fromHtml
-                    |> Events.simulate (Input "cats")
-                    |> Events.expectEvent (SampleInputMsg "CATS")
+                    |> Event.simulate (Event.input "cats")
+                    |> Event.expect (SampleInputMsg "CATS")
         , test "returns msg for check event" <|
             \() ->
                 input [ onCheck SampleCheckedMsg ] []
                     |> Query.fromHtml
-                    |> Events.simulate (Check True)
-                    |> Events.expectEvent (SampleCheckedMsg True)
+                    |> Event.simulate (Event.check True)
+                    |> Event.expect (SampleCheckedMsg True)
         , test "returns msg for custom event" <|
             \() ->
                 input [ on "keyup" (Json.Decode.map SampleKeyUpMsg keyCode) ] []
                     |> Query.fromHtml
-                    |> Events.simulate (CustomEvent "keyup" "{\"keyCode\": 5}")
-                    |> Events.expectEvent (SampleKeyUpMsg 5)
-        , testEvent onDoubleClick DoubleClick
-        , testEvent onMouseDown MouseDown
-        , testEvent onMouseUp MouseUp
-        , testEvent onMouseLeave MouseLeave
-        , testEvent onMouseOver MouseOver
-        , testEvent onMouseOut MouseOut
-        , testEvent onSubmit Submit
-        , testEvent onBlur Blur
-        , testEvent onFocus Focus
+                    |> Event.simulate ( "keyup", Encode.object [ ( "keyCode", Encode.int 5 ) ] )
+                    |> Event.expect (SampleKeyUpMsg 5)
+        , testEvent onDoubleClick Event.doubleClick
+        , testEvent onMouseDown Event.mouseDown
+        , testEvent onMouseUp Event.mouseUp
+        , testEvent onMouseLeave Event.mouseLeave
+        , testEvent onMouseOver Event.mouseOver
+        , testEvent onMouseOut Event.mouseOut
+        , testEvent onSubmit Event.submit
+        , testEvent onBlur Event.blur
+        , testEvent onFocus Event.focus
         , test "event result" <|
             \() ->
                 Query.fromHtml sampleHtml
                     |> Query.find [ tag "button" ]
-                    |> Events.simulate Click
-                    |> Events.eventResult
+                    |> Event.simulate Event.click
+                    |> Event.toResult
                     |> Expect.equal (Ok SampleMsg)
         ]
 
@@ -126,11 +127,11 @@ deepMappedHtml =
         ]
 
 
-testEvent : (Msg -> Html.Attribute Msg) -> Event -> Test
-testEvent testOn event =
-    test ("returns msg for " ++ (toString event) ++ " event") <|
+testEvent : (Msg -> Html.Attribute Msg) -> ( String, Value ) -> Test
+testEvent testOn (( eventName, eventValue ) as event) =
+    test ("returns msg for " ++ eventName ++ "(" ++ toString eventValue ++ ") event") <|
         \() ->
             input [ testOn SampleMsg ] []
                 |> Query.fromHtml
-                |> Events.simulate event
-                |> Events.expectEvent SampleMsg
+                |> Event.simulate event
+                |> Event.expect SampleMsg
