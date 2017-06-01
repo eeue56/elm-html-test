@@ -17,6 +17,7 @@ module Test.Html.Event
         , submit
         , blur
         , focus
+        , custom
         )
 
 {-| This module lets you simulate events on `Html` values and expect that
@@ -30,7 +31,7 @@ they result in certain `Msg` values being sent to `update`.
 
 ## Event Builders
 
-@docs click, doubleClick, mouseDown, mouseUp, mouseEnter, mouseLeave, mouseOver, mouseOut, input, check, submit, blur, focus
+@docs custom, click, doubleClick, mouseDown, mouseUp, mouseEnter, mouseLeave, mouseOver, mouseOut, input, check, submit, blur, focus
 
 -}
 
@@ -66,33 +67,6 @@ type Event msg
                 |> Query.fromHtml
                 |> Event.simulate (Event.input "cats")
                 |> Event.expect (Change "cats")
-
-You can simulate custom events by passing a tuple containing the event name string and a
-`Value` representing the event object the browser would send to the event listener callback.
-
-    import Test.Html.Event as Event
-    import Json.Encode as Encode exposing (Value)
-
-
-    type Msg
-        = Change String
-
-
-    test "Input produces expected Msg" <|
-        \() ->
-            let
-                simulatedEventObject : Value
-                simulatedEventObject =
-                    Encode.object
-                        [ ( "target"
-                          , Encode.object [ ( "value", Encode.string "cats" ) ]
-                          )
-                        ]
-            in
-                Html.input [ onInput Change ] [ ]
-                    |> Query.fromHtml
-                    |> Event.simulate ( "input", simulatedEventObject )
-                    |> Event.expect (Change "cats")
 
 -}
 simulate : ( String, Value ) -> Query.Single msg -> Event msg
@@ -268,6 +242,39 @@ blur =
 focus : ( String, Value )
 focus =
     ( "focus", emptyObject )
+
+
+{-| Simulate a custom event. The `String` is the event name, and the `Value` is the event object
+the browser would send to the event listener callback.
+
+    import Test.Html.Event as Event
+    import Json.Encode as Encode exposing (Value)
+
+
+    type Msg
+        = Change String
+
+
+    test "Input produces expected Msg" <|
+        \() ->
+            let
+                simulatedEventObject : Value
+                simulatedEventObject =
+                    Encode.object
+                        [ ( "target"
+                          , Encode.object [ ( "value", Encode.string "cats" ) ]
+                          )
+                        ]
+            in
+                Html.input [ onInput Change ] [ ]
+                    |> Query.fromHtml
+                    |> Event.simulate (Event.custom "input" simulatedEventObject)
+                    |> Event.expect (Change "cats")
+
+-}
+custom : String -> Value -> ( String, Value )
+custom =
+    (,)
 
 
 
