@@ -1,12 +1,12 @@
 module Queries exposing (..)
 
-import Html exposing (Html, div, ul, li, header, footer, a, section)
-import Html.Lazy as Lazy
+import Expect
+import Html exposing (Html, a, div, footer, header, li, section, ul)
 import Html.Attributes as Attr exposing (href)
+import Html.Lazy as Lazy
+import Test exposing (..)
 import Test.Html.Query as Query exposing (Single)
 import Test.Html.Selector exposing (..)
-import Test exposing (..)
-import Expect
 
 
 htmlTests : Test
@@ -51,6 +51,18 @@ testRoot output =
                 \() ->
                     output
                         |> Query.has [ classes [ "root" ] ]
+            , test "recognizes its style by a single css property" <|
+                \() ->
+                    output
+                        |> Query.has [ style [ ( "color", "red" ) ] ]
+            , test "recognizes its style by multiple css properties" <|
+                \() ->
+                    output
+                        |> Query.has [ style [ ( "color", "red" ), ( "background", "purple" ) ] ]
+            , test "recognizes its style does not include a css property" <|
+                \() ->
+                    output
+                        |> Query.hasNot [ style [ ( "color", "green" ) ] ]
             , test "recognizes if is has a specific descendant" <|
                 \() ->
                     output
@@ -81,6 +93,10 @@ testFind output =
                     output
                         |> Query.find []
                         |> Query.has [ classes [ "container" ] ]
+            , test "recognizes its style by style list" <|
+                \() ->
+                    output
+                        |> Query.has [ style [ ( "color", "blue" ) ] ]
             , test "recognizes if is has a specific descendant" <|
                 \() ->
                     output
@@ -204,8 +220,8 @@ testChildren output =
 
 sampleHtml : Html msg
 sampleHtml =
-    section [ Attr.class "root" ]
-        [ div [ Attr.class "container" ]
+    section [ Attr.class "root", Attr.style [ ( "color", "red" ), ( "background", "purple" ), ( "font-weight", "bold" ) ] ]
+        [ div [ Attr.class "container", Attr.style [ ( "color", "blue" ) ] ]
             [ header [ Attr.class "funky themed", Attr.id "heading" ]
                 [ a [ href "http://elm-lang.org" ] [ Html.text "home" ]
                 , a [ href "http://elm-lang.org/examples" ] [ Html.text "examples" ]
@@ -229,8 +245,8 @@ sampleHtml =
 
 sampleLazyHtml : Html msg
 sampleLazyHtml =
-    section [ Attr.class "root" ]
-        [ div [ Attr.class "container" ]
+    section [ Attr.class "root", Attr.style [ ( "color", "red" ), ( "background", "purple" ), ( "font-weight", "bold" ) ] ]
+        [ div [ Attr.class "container", Attr.style [ ( "color", "blue" ) ] ]
             [ header [ Attr.class "funky themed", Attr.id "heading" ]
                 [ Lazy.lazy (\str -> a [ href "http://elm-lang.org" ] [ Html.text str ]) "home"
                 , Lazy.lazy (\str -> a [ href "http://elm-lang.org/examples" ] [ Html.text str ]) "examples"
