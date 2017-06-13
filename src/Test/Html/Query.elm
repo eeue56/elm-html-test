@@ -279,6 +279,7 @@ index position (Internal.Multiple showTrace query) =
     import Test.Html.Query as Query
     import Test exposing (test)
     import Test.Html.Selector exposing (tag)
+    import Expect
 
 
     test "The list has three items" <|
