@@ -8,6 +8,7 @@ module Test.Html.Selector
         , class
         , classes
         , className
+        , style
         , tag
         , text
         , checked
@@ -247,6 +248,26 @@ boolAttribute name value =
         , value = value
         , asString = "boolAttribute " ++ toString name ++ " " ++ toString value
         }
+
+{-| Matches elements that have all the given style properties (and possibly others as well).
+
+    import Html
+    import Html.Attributes as Attr
+    import Test.Html.Query as Query
+    import Test exposing (test)
+    import Test.Html.Selector exposing (classes)
+
+
+    test "the Reply button has red text" <|
+        \() ->
+            Html.div []
+                [ Html.button [ Attr.style [ ( "color", "red" ) ] ] [ Html.text "Reply" ] ]
+                |> Query.has [ style [ ( "color", "red" ) ] ]
+
+-}
+style : List (String, String) -> Selector
+style style =
+    Style style
 
 
 {-| Matches elements that have a

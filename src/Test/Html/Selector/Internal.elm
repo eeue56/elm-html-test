@@ -10,6 +10,7 @@ type Selector
     | Class String
     | Attribute { name : String, value : String, asString : String }
     | BoolAttribute { name : String, value : Bool, asString : String }
+    | Style (List ( String, String ))
     | Tag { name : String, asString : String }
     | Text String
 
@@ -34,11 +35,21 @@ selectorToString criteria =
         BoolAttribute { asString } ->
             asString
 
+        Style style ->
+            "styles " ++ styleToString style
+
         Tag { asString } ->
             asString
 
         Text text ->
             "text " ++ toString text
+
+
+styleToString : List ( String, String ) -> String
+styleToString style =
+    style
+        |> List.map (\( k, v ) -> k ++ ":" ++ v ++ ";")
+        |> String.join " "
 
 
 queryAll : List Selector -> List (ElmHtml msg) -> List (ElmHtml msg)
@@ -85,6 +96,9 @@ query fn fnAll selector list =
 
         BoolAttribute { name, value } ->
             List.concatMap (fn (ElmHtml.Query.BoolAttribute name value)) list
+
+        Style style ->
+            List.concatMap (fn (ElmHtml.Query.Style style)) list
 
         Tag { name } ->
             List.concatMap (fn (ElmHtml.Query.Tag name)) list
