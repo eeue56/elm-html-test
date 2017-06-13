@@ -28,7 +28,7 @@ module Test.Html.Selector
 
 ## Attributes
 
-@docs id, class, classes, className, checked, selected, disabled
+@docs id, class, classes, className, style, checked, selected, disabled
 
 -}
 
