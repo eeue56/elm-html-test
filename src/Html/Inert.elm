@@ -1,12 +1,11 @@
-module Html.Inert exposing (Node, fromHtml, toElmHtml, fromElmHtml)
+module Html.Inert exposing (Node, attributeName, fromElmHtml, fromHtml, toElmHtml)
 
 {-| Inert Html - that is, can't do anything with events.
 -}
 
+import ElmHtml.InternalTypes exposing (ElmHtml, EventHandler, Tagger, decodeElmHtml)
 import Html exposing (Html)
 import Json.Decode
-import Html exposing (Html)
-import ElmHtml.InternalTypes exposing (decodeElmHtml, ElmHtml, Tagger, EventHandler)
 import Native.HtmlAsJson
 
 
@@ -46,6 +45,11 @@ impossibleMessage =
     "An Inert Node fired an event handler. This should never happen! Please report this bug."
 
 
+attributeName : Html.Attribute a -> String
+attributeName attribute =
+    Native.HtmlAsJson.attributeName attribute
+
+
 {-| Gets the function out of a tagger
 -}
 taggerFunction : Tagger -> (a -> msg)
@@ -66,7 +70,7 @@ taggedEventDecoder : List Tagger -> EventHandler -> Json.Decode.Decoder msg
 taggedEventDecoder taggers eventHandler =
     case taggers of
         [] ->
-            (eventDecoder eventHandler)
+            eventDecoder eventHandler
 
         [ tagger ] ->
             Json.Decode.map (taggerFunction tagger) (eventDecoder eventHandler)

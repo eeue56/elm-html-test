@@ -18,6 +18,20 @@ var _eeue56$elm_html_test$Native_HtmlAsJson = (function() {
         },
         taggerFunction: function (tagger) {
             return tagger;
+        },
+        attributeName: function(attribute) {
+          switch (attribute.key) {
+            case 'STYLE':
+              return 'style';
+
+            case 'EVENT':
+            case 'ATTR':
+            case 'ATTR_NS':
+              return attribute.realKey;
+
+            default:
+              return attribute.key;
+          }
         }
     };
 })();

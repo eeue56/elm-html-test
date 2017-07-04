@@ -2,18 +2,17 @@ module Test.Html.Selector
     exposing
         ( Selector
         , all
-        , id
         , attribute
-        , boolAttribute
+        , checked
         , class
-        , classes
         , className
+        , classes
+        , disabled
+        , id
+        , selected
         , style
         , tag
         , text
-        , checked
-        , selected
-        , disabled
         )
 
 {-| Selecting HTML elements.
@@ -23,7 +22,7 @@ module Test.Html.Selector
 
 ## General Selectors
 
-@docs tag, text, attribute, boolAttribute, all
+@docs tag, text, attribute, all
 
 
 ## Attributes
@@ -32,6 +31,10 @@ module Test.Html.Selector
 
 -}
 
+import Dict
+import ElmHtml.InternalTypes
+import Html exposing (Attribute)
+import Html.Inert
 import Test.Html.Selector.Internal as Internal exposing (..)
 
 
@@ -121,7 +124,7 @@ class =
 {-| Matches the element's exact class attribute string.
 
 This is used less often than [`class`](#class) or [`classes`](#classes), which
-check for the *presence* of a class as opposed to matching the entire class
+check for the _presence_ of a class as opposed to matching the entire class
 attribute exactly.
 
     import Html
@@ -192,9 +195,11 @@ tag name =
         }
 
 
-{-| Matches elements that have the given attribute with the given string value.
-
-For attributes with boolean values, such as `checked`, use [`boolAttribute`](#boolAttribute).
+{-| Matches elements that have the given attribute. Any attributes that can
+exist with `String` or `Bool` values like `title` or `disabled` will be matched.
+`Html.Attributes.class` and `Html.Attributes.classList` will work the same as
+`Selectors.classes`. `Html.Attributes.style` will work the same way as
+`Selectors.style`.
 
     import Html
     import Html.Attributes as Attr
@@ -208,46 +213,52 @@ For attributes with boolean values, such as `checked`, use [`boolAttribute`](#bo
             Html.div []
                 [ Html.h1 [ Attr.title "greeting" ] [ Html.text "Hello!" ] ]
                 |> Query.fromHtml
-                |> Query.find [ attribute "title" "greeting" ]
+                |> Query.find [ attribute <| Attr.title "greeting" ]
                 |> Query.has [ text "Hello!" ]
 
 -}
-attribute : String -> String -> Selector
-attribute name value =
-    Attribute
-        { name = name
-        , value = value
-        , asString = "attribute " ++ toString name ++ " " ++ toString value
-        }
+attribute : Attribute Never -> Selector
+attribute attr =
+    let
+        name =
+            Html.Inert.attributeName attr
 
+        fakeDiv =
+            Html.div [ attr ] []
+                |> Html.Inert.fromHtml
+                |> Html.Inert.toElmHtml
 
-{-| Matches elements that have the given attribute with the given boolean value.
+        facts =
+            case fakeDiv of
+                ElmHtml.InternalTypes.NodeEntry { tag, children, facts, descendantsCount } ->
+                    facts
 
-For attributes with string values, such as `title`, use [`attribute`](#attribute).
+                _ ->
+                    ElmHtml.InternalTypes.emptyFacts
+    in
+    case name of
+        "style" ->
+            Style <| Dict.toList facts.styles
 
-    import Html
-    import Html.Attributes as Attr
-    import Test.Html.Query as Query
-    import Test exposing (test)
-    import Test.Html.Selector exposing (boolAttribute, text)
+        "className" ->
+            facts.stringAttributes
+                |> Dict.get "className"
+                |> Maybe.map (String.split " ")
+                |> Maybe.withDefault []
+                |> Classes
 
+        _ ->
+            facts.stringAttributes
+                |> Dict.get name
+                |> Maybe.map (namedAttr name)
+                |> orElseLazy
+                    (\_ ->
+                        facts.boolAttributes
+                            |> Dict.get name
+                            |> Maybe.map (namedBoolAttr name)
+                    )
+                |> Maybe.withDefault Invalid
 
-    test "the disabled button says Reply" <|
-        \() ->
-            Html.div []
-                [ Html.button [ Attr.disabled True ] [ Html.text "Reply" ] ]
-                |> Query.fromHtml
-                |> Query.find [ boolAttribute "disabled" True ]
-                |> Query.has [ text "Reply" ]
-
--}
-boolAttribute : String -> Bool -> Selector
-boolAttribute name value =
-    BoolAttribute
-        { name = name
-        , value = value
-        , asString = "boolAttribute " ++ toString name ++ " " ++ toString value
-        }
 
 {-| Matches elements that have all the given style properties (and possibly others as well).
 
@@ -265,7 +276,7 @@ boolAttribute name value =
                 |> Query.has [ style [ ( "color", "red" ) ] ]
 
 -}
-style : List (String, String) -> Selector
+style : List ( String, String ) -> Selector
 style style =
     Style style
 
@@ -307,22 +318,14 @@ checked =
 
 
 
--- HELPERS --
+-- HELPERS
 
 
-namedAttr : String -> String -> Selector
-namedAttr name value =
-    Attribute
-        { name = name
-        , value = value
-        , asString = name ++ " " ++ toString value
-        }
+orElseLazy : (() -> Maybe a) -> Maybe a -> Maybe a
+orElseLazy fma mb =
+    case mb of
+        Nothing ->
+            fma ()
 
-
-namedBoolAttr : String -> Bool -> Selector
-namedBoolAttr name value =
-    BoolAttribute
-        { name = name
-        , value = value
-        , asString = name ++ " " ++ toString value
-        }
+        Just _ ->
+            mb

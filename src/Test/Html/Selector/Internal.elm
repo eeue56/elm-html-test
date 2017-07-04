@@ -8,11 +8,12 @@ type Selector
     = All (List Selector)
     | Classes (List String)
     | Class String
-    | Attribute { name : String, value : String, asString : String }
+    | StringAttribute { name : String, value : String, asString : String }
     | BoolAttribute { name : String, value : Bool, asString : String }
     | Style (List ( String, String ))
     | Tag { name : String, asString : String }
     | Text String
+    | Invalid
 
 
 selectorToString : Selector -> String
@@ -29,11 +30,11 @@ selectorToString criteria =
         Class class ->
             "class " ++ toString class
 
-        Attribute { asString } ->
-            asString
+        StringAttribute { asString } ->
+            "attribute " ++ asString
 
         BoolAttribute { asString } ->
-            asString
+            "boolAttribute " ++ asString
 
         Style style ->
             "styles " ++ styleToString style
@@ -43,6 +44,9 @@ selectorToString criteria =
 
         Text text ->
             "text " ++ toString text
+
+        Invalid ->
+            "invalid"
 
 
 styleToString : List ( String, String ) -> String
@@ -91,7 +95,7 @@ query fn fnAll selector list =
         Class class ->
             List.concatMap (fn (ElmHtml.Query.ClassList [ class ])) list
 
-        Attribute { name, value } ->
+        StringAttribute { name, value } ->
             List.concatMap (fn (ElmHtml.Query.Attribute name value)) list
 
         BoolAttribute { name, value } ->
@@ -105,3 +109,24 @@ query fn fnAll selector list =
 
         Text text ->
             List.concatMap (fn (ElmHtml.Query.ContainsText text)) list
+
+        Invalid ->
+            []
+
+
+namedAttr : String -> String -> Selector
+namedAttr name value =
+    StringAttribute
+        { name = name
+        , value = value
+        , asString = toString name ++ " " ++ toString value
+        }
+
+
+namedBoolAttr : String -> Bool -> Selector
+namedBoolAttr name value =
+    BoolAttribute
+        { name = name
+        , value = value
+        , asString = toString name ++ " " ++ toString value
+        }
