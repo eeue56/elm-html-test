@@ -217,33 +217,25 @@ exist with `String` or `Bool` values like `title` or `disabled` will be matched.
 attribute : Attribute Never -> Selector
 attribute attr =
     let
-        fakeDiv =
-            Html.div [ attr ] []
-                |> Html.Inert.fromHtml
-                |> Html.Inert.toElmHtml
-
         facts =
-            case fakeDiv of
-                ElmHtml.InternalTypes.NodeEntry { tag, children, facts, descendantsCount } ->
-                    facts
-
-                _ ->
-                    ElmHtml.InternalTypes.emptyFacts
+            Html.div [ attr ] []
+                |> Html.Inert.findFacts
+                |> Maybe.withDefault ElmHtml.InternalTypes.emptyFacts
     in
     case Html.Inert.attributeName attr of
-        Just "style" ->
+        "style" ->
             facts.styles
                 |> Dict.toList
                 |> Style
 
-        Just "className" ->
+        "className" ->
             facts.stringAttributes
                 |> Dict.get "className"
                 |> Maybe.map (String.split " ")
                 |> Maybe.withDefault []
                 |> Classes
 
-        Just name ->
+        name ->
             facts.stringAttributes
                 |> Dict.get name
                 |> Maybe.map (namedAttr name)
@@ -254,9 +246,6 @@ attribute attr =
                             |> Maybe.map (namedBoolAttr name)
                     )
                 |> Maybe.withDefault Invalid
-
-        Nothing ->
-            Invalid
 
 
 {-| Matches elements that have all the given style properties (and possibly others as well).

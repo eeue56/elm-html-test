@@ -1,9 +1,9 @@
-module Html.Inert exposing (Node, attributeName, fromElmHtml, fromHtml, toElmHtml)
+module Html.Inert exposing (Node, attributeName, findFacts, fromElmHtml, fromHtml, toElmHtml)
 
 {-| Inert Html - that is, can't do anything with events.
 -}
 
-import ElmHtml.InternalTypes exposing (ElmHtml, EventHandler, Tagger, decodeElmHtml)
+import ElmHtml.InternalTypes exposing (ElmHtml(..), EventHandler, Facts, Tagger, decodeElmHtml)
 import Html exposing (Html)
 import Json.Decode
 import Native.HtmlAsJson
@@ -40,6 +40,25 @@ toElmHtml (Node elmHtml) =
     elmHtml
 
 
+findFacts : Html msg -> Maybe (Facts msg)
+findFacts node =
+    case toElmHtml (fromHtml node) of
+        NodeEntry { facts } ->
+            Just facts
+
+        CustomNode { facts } ->
+            Just facts
+
+        MarkdownNode { facts } ->
+            Just facts
+
+        TextTag _ ->
+            Nothing
+
+        NoOp ->
+            Nothing
+
+
 impossibleMessage : String
 impossibleMessage =
     "An Inert Node fired an event handler. This should never happen! Please report this bug."
@@ -64,12 +83,14 @@ attributeNameDecoder =
             )
 
 
-attributeName : Html.Attribute a -> Maybe String
+attributeName : Html.Attribute a -> String
 attributeName attribute =
-    attribute
-        |> attributeToJson
-        |> Json.Decode.decodeValue attributeNameDecoder
-        |> Result.toMaybe
+    case Json.Decode.decodeValue attributeNameDecoder (attributeToJson attribute) of
+        Ok name ->
+            name
+
+        Err str ->
+            Debug.crash ("Error internally processing Html.Attribute for testing - please report this error message as a bug: " ++ str)
 
 
 {-| Gets the function out of a tagger
