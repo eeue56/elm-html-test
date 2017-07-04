@@ -189,17 +189,14 @@ id =
 -}
 tag : String -> Selector
 tag name =
-    Tag
-        { name = name
-        , asString = "tag " ++ toString name
-        }
+    Tag name
 
 
 {-| Matches elements that have the given attribute. Any attributes that can
 exist with `String` or `Bool` values like `title` or `disabled` will be matched.
 `Html.Attributes.class` and `Html.Attributes.classList` will work the same as
 `Selectors.classes`. `Html.Attributes.style` will work the same way as
-`Selectors.style`.
+`Selectors.styles`.
 
     import Html
     import Html.Attributes as Attr

@@ -8,10 +8,10 @@ type Selector
     = All (List Selector)
     | Classes (List String)
     | Class String
-    | Attribute { name : String, value : String, asString : String }
-    | BoolAttribute { name : String, value : Bool, asString : String }
+    | Attribute { name : String, value : String }
+    | BoolAttribute { name : String, value : Bool }
     | Style (List ( String, String ))
-    | Tag { name : String, asString : String }
+    | Tag String
     | Text String
     | Invalid
 
@@ -30,17 +30,17 @@ selectorToString criteria =
         Class class ->
             "class " ++ toString class
 
-        Attribute { asString } ->
-            "attribute " ++ asString
+        Attribute { name, value } ->
+            "attribute " ++ toString name ++ " " ++ toString value
 
-        BoolAttribute { asString } ->
-            "attribute " ++ asString
+        BoolAttribute { name, value } ->
+            "attribute " ++ toString name ++ " " ++ toString value
 
         Style style ->
             "styles " ++ styleToString style
 
-        Tag { asString } ->
-            asString
+        Tag name ->
+            "tag " ++ toString name
 
         Text text ->
             "text " ++ toString text
@@ -104,7 +104,7 @@ query fn fnAll selector list =
         Style style ->
             List.concatMap (fn (ElmHtml.Query.Style style)) list
 
-        Tag { name } ->
+        Tag name ->
             List.concatMap (fn (ElmHtml.Query.Tag name)) list
 
         Text text ->
@@ -119,7 +119,6 @@ namedAttr name value =
     Attribute
         { name = name
         , value = value
-        , asString = toString name ++ " " ++ toString value
         }
 
 
@@ -128,5 +127,4 @@ namedBoolAttr name value =
     BoolAttribute
         { name = name
         , value = value
-        , asString = toString name ++ " " ++ toString value
         }
