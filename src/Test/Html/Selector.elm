@@ -235,7 +235,9 @@ attribute attr =
     in
     case name of
         "style" ->
-            Style <| Dict.toList facts.styles
+            facts.styles
+                |> Dict.toList
+                |> Style
 
         "className" ->
             facts.stringAttributes

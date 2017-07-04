@@ -31,10 +31,16 @@ selectorToString criteria =
             "class " ++ toString class
 
         Attribute { name, value } ->
-            "attribute " ++ toString name ++ " " ++ toString value
+            "attribute "
+                ++ toString name
+                ++ " "
+                ++ toString value
 
         BoolAttribute { name, value } ->
-            "attribute " ++ toString name ++ " " ++ toString value
+            "attribute "
+                ++ toString name
+                ++ " "
+                ++ toString value
 
         Style style ->
             "styles " ++ styleToString style
