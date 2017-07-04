@@ -8,7 +8,7 @@ type Selector
     = All (List Selector)
     | Classes (List String)
     | Class String
-    | StringAttribute { name : String, value : String, asString : String }
+    | Attribute { name : String, value : String, asString : String }
     | BoolAttribute { name : String, value : Bool, asString : String }
     | Style (List ( String, String ))
     | Tag { name : String, asString : String }
@@ -30,7 +30,7 @@ selectorToString criteria =
         Class class ->
             "class " ++ toString class
 
-        StringAttribute { asString } ->
+        Attribute { asString } ->
             "attribute " ++ asString
 
         BoolAttribute { asString } ->
@@ -95,7 +95,7 @@ query fn fnAll selector list =
         Class class ->
             List.concatMap (fn (ElmHtml.Query.ClassList [ class ])) list
 
-        StringAttribute { name, value } ->
+        Attribute { name, value } ->
             List.concatMap (fn (ElmHtml.Query.Attribute name value)) list
 
         BoolAttribute { name, value } ->
@@ -116,7 +116,7 @@ query fn fnAll selector list =
 
 namedAttr : String -> String -> Selector
 namedAttr name value =
-    StringAttribute
+    Attribute
         { name = name
         , value = value
         , asString = toString name ++ " " ++ toString value
