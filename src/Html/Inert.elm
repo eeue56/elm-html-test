@@ -45,9 +45,31 @@ impossibleMessage =
     "An Inert Node fired an event handler. This should never happen! Please report this bug."
 
 
-attributeName : Html.Attribute a -> String
+attributeToJson : Html.Attribute a -> Json.Decode.Value
+attributeToJson attribute =
+    Native.HtmlAsJson.attributeToJson attribute
+
+
+attributeNameDecoder : Json.Decode.Decoder String
+attributeNameDecoder =
+    Json.Decode.field "key" Json.Decode.string
+        |> Json.Decode.andThen
+            (\key ->
+                if key == "STYLE" then
+                    Json.Decode.succeed "style"
+                else if key == "ATTR" || key == "ATTR_NS" || key == "EVENT" then
+                    Json.Decode.field "realKey" Json.Decode.string
+                else
+                    Json.Decode.succeed key
+            )
+
+
+attributeName : Html.Attribute a -> Maybe String
 attributeName attribute =
-    Native.HtmlAsJson.attributeName attribute
+    attribute
+        |> attributeToJson
+        |> Json.Decode.decodeValue attributeNameDecoder
+        |> Result.toMaybe
 
 
 {-| Gets the function out of a tagger
