@@ -34,7 +34,7 @@ selectorToString criteria =
             "attribute " ++ asString
 
         BoolAttribute { asString } ->
-            "boolAttribute " ++ asString
+            "attribute " ++ asString
 
         Style style ->
             "styles " ++ styleToString style
