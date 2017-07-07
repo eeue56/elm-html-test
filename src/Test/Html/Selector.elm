@@ -123,22 +123,22 @@ class =
 
 {-| Matches the element's exact class attribute string.
 
-This is used less often than [`class`](#class) or [`classes`](#classes), which
-check for the _presence_ of a class as opposed to matching the entire class
-attribute exactly.
+This is used less often than [`class`](#class), [`classes`](#classes) or
+[`attribute`](#attribute), which check for the _presence_ of a class as opposed
+to matching the entire class attribute exactly.
 
     import Html
     import Html.Attributes as Attr
     import Test.Html.Query as Query
     import Test exposing (test)
-    import Test.Html.Selector exposing (className)
+    import Test.Html.Selector exposing (exactClassName)
 
 
     test "Button has the exact class 'btn btn-large'" <|
         \() ->
             Html.button [ Attr.class "btn btn-large" ] [ Html.text "Reply" ]
                 |> Query.fromHtml
-                |> Query.has [ className "btn btn-large" ]
+                |> Query.has [ exactClassName "btn btn-large" ]
 
 -}
 exactClassName : String -> Selector
