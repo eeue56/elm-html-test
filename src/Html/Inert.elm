@@ -1,4 +1,4 @@
-module Html.Inert exposing (Node, attributeName, findFacts, fromElmHtml, fromHtml, toElmHtml)
+module Html.Inert exposing (AttributeType(..), Node, attributeName, attributeType, findFacts, fromElmHtml, fromHtml, toElmHtml)
 
 {-| Inert Html - that is, can't do anything with events.
 -}
@@ -81,6 +81,47 @@ attributeNameDecoder =
                 else
                     Json.Decode.succeed key
             )
+
+
+type AttributeType
+    = Attribute
+    | NamespacedAttribute
+    | Event
+    | Style
+    | Property
+
+
+attributeTypeDecoder : Json.Decode.Decoder AttributeType
+attributeTypeDecoder =
+    Json.Decode.field "key" Json.Decode.string
+        |> Json.Decode.map
+            (\key ->
+                case key of
+                    "ATTR" ->
+                        Attribute
+
+                    "ATTR_NS" ->
+                        NamespacedAttribute
+
+                    "EVENT" ->
+                        Event
+
+                    "STYLE" ->
+                        Style
+
+                    _ ->
+                        Property
+            )
+
+
+attributeType : Html.Attribute a -> AttributeType
+attributeType attribute =
+    case Json.Decode.decodeValue attributeTypeDecoder (attributeToJson attribute) of
+        Ok attributeType ->
+            attributeType
+
+        Err str ->
+            Debug.crash ("Error internally processing Html.Attribute for testing - please report this error message as a bug: " ++ str)
 
 
 attributeName : Html.Attribute a -> String

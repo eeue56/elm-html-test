@@ -31,11 +31,31 @@ all =
                 Attr.style [ ( "margin", "0" ) ]
                     |> Selector.attribute
                     |> Expect.equal (Style [ ( "margin", "0" ) ])
-        , test "can generate a Classes selector" <|
-            \() ->
-                Attr.class "hello world"
-                    |> Selector.attribute
-                    |> Expect.equal (Classes [ "hello", "world" ])
+        , describe "classes" <|
+            [ test "can generate a Classes selector" <|
+                \() ->
+                    Attr.class "hello world"
+                        |> Selector.attribute
+                        |> Expect.equal (Classes [ "hello", "world" ])
+            , test "catches a situation where the user passes classes using Html.Attr.attribute \"class\" \"the-class\"" <|
+                \() ->
+                    Attr.attribute "class" "hello world"
+                        |> Selector.attribute
+                        |> Expect.equal (Classes [ "hello", "world" ])
+            , test "can find a class attribute in a case insensitive manner" <|
+                \() ->
+                    Attr.attribute "CLASS" "hello world"
+                        |> Selector.attribute
+                        |> Expect.equal (Classes [ "hello", "world" ])
+            , test "finds className property only by exact match" <|
+                \() ->
+                    Attr.property "classname" (Encode.string "hello world")
+                        |> Selector.attribute
+                        |> Expect.all
+                            [ Expect.notEqual (Classes [ "hello world" ])
+                            , Expect.equal (Attribute { name = "classname", value = "hello world" })
+                            ]
+            ]
         , test "anything else fails" <|
             \() ->
                 Attr.property "unknown" (Encode.int 1)

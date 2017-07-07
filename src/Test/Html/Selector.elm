@@ -5,9 +5,9 @@ module Test.Html.Selector
         , attribute
         , checked
         , class
-        , className
         , classes
         , disabled
+        , exactClassName
         , id
         , selected
         , style
@@ -27,11 +27,11 @@ module Test.Html.Selector
 
 ## Attributes
 
-@docs id, class, classes, className, style, checked, selected, disabled
+@docs id, class, classes, exactClassName, style, checked, selected, disabled
 
 -}
 
-import Dict
+import Dict exposing (Dict)
 import ElmHtml.InternalTypes
 import Html exposing (Attribute)
 import Html.Inert
@@ -141,8 +141,8 @@ attribute exactly.
                 |> Query.has [ className "btn btn-large" ]
 
 -}
-className : String -> Selector
-className =
+exactClassName : String -> Selector
+exactClassName =
     namedAttr "className"
 
 
@@ -192,26 +192,67 @@ tag name =
     Tag name
 
 
-{-| Matches elements that have the given attribute. Any attributes that can
-exist with `String` or `Bool` values like `title` or `disabled` will be matched.
-`Html.Attributes.class` and `Html.Attributes.classList` will work the same as
-`Selectors.classes`. `Html.Attributes.style` will work the same way as
-`Selectors.styles`.
+{-| Matches elements that have the given attribute in a way that makes sense
+given their semantics in `Html`.
+
+
+#### How matching works:
+
+  - `Html.Attributes.class` and `Html.Attributes.classList` will work the same as
+    `Selectors.classes`, matching any element with at least the given classes.
+
+  - `Html.Attributes.style` will work the same way as `Selectors.styles`, matching
+    any element with at least the given style properties.
+
+  - Any other `String` attributes like `title` or `Bool` attributes like
+    `disabled` will match elements with the exact value for those attributes.
+
+  - Any attributes from `Html.Events`, or attributes with values that have types
+    other than `String` or `Bool` will not match anything.
+
+The example below demonstrates usage
 
     import Html
     import Html.Attributes as Attr
-    import Test.Html.Query as Query
     import Test exposing (test)
+    import Test.Html.Query as Query
     import Test.Html.Selector exposing (attribute, text)
 
-
-    test "the welcome <h1> says hello!" <|
-        \() ->
-            Html.div []
-                [ Html.h1 [ Attr.title "greeting" ] [ Html.text "Hello!" ] ]
-                |> Query.fromHtml
-                |> Query.find [ attribute <| Attr.title "greeting" ]
-                |> Query.has [ text "Hello!" ]
+    tests =
+        describe "attributes"
+            [ test "the welcome <h1> says hello!" <|
+                \() ->
+                    Html.div [] [ Html.h1 [ Attr.title "greeting" ] [ Html.text "Hello!" ] ]
+                        |> Query.fromHtml
+                        |> Query.find [ attribute <| Attr.title "greeting" ]
+                        |> Query.has [ text "Hello!" ]
+            , test "the .Hello.World div has the class Hello" <|
+                \() ->
+                    Html.div
+                        [ Attr.classList
+                            [ ( True, "Hello" )
+                            , ( True, "World" )
+                            ]
+                        ]
+                        |> Query.fromHtml
+                        |> Query.find
+                            [ attribute <|
+                                Attr.classList [ ( True, Hello ) ]
+                            ]
+            , test "the header is red" <|
+                \() ->
+                    Html.header
+                        [ Attr.style
+                            [ ( "backround-color", "red" )
+                            , ( "color", "yellow" )
+                            ]
+                        ]
+                        |> Query.fromHtml
+                        |> Query.find
+                            [ attribute <|
+                                Attr.style [ ( "backround-color", "red" ) ]
+                            ]
+            ]
 
 -}
 attribute : Attribute Never -> Selector
@@ -221,31 +262,35 @@ attribute attr =
             Html.div [ attr ] []
                 |> Html.Inert.findFacts
                 |> Maybe.withDefault ElmHtml.InternalTypes.emptyFacts
+
+        name =
+            Html.Inert.attributeName attr
+
+        attributeType =
+            Html.Inert.attributeType attr
     in
-    case Html.Inert.attributeName attr of
-        "style" ->
-            facts.styles
-                |> Dict.toList
-                |> Style
-
-        "className" ->
-            facts.stringAttributes
-                |> Dict.get "className"
-                |> Maybe.map (String.split " ")
-                |> Maybe.withDefault []
-                |> Classes
-
-        name ->
-            facts.stringAttributes
-                |> Dict.get name
-                |> Maybe.map (namedAttr name)
-                |> orElseLazy
-                    (\_ ->
-                        facts.boolAttributes
-                            |> Dict.get name
-                            |> Maybe.map (namedBoolAttr name)
-                    )
-                |> Maybe.withDefault Invalid
+    if attributeType == Html.Inert.Style then
+        facts.styles
+            |> Dict.toList
+            |> Style
+    else if String.toLower name == "class" && attributeType == Html.Inert.Attribute then
+        facts.stringAttributes
+            |> dictGetCaseInsensitive name
+            |> Maybe.map (String.split " ")
+            |> Maybe.withDefault []
+            |> Classes
+    else if name == "className" && attributeType == Html.Inert.Property then
+        facts.stringAttributes
+            |> Dict.get "className"
+            |> Maybe.map (String.split " ")
+            |> Maybe.withDefault []
+            |> Classes
+    else if attributeType == Html.Inert.Attribute then
+        findAttributeInFacts True name facts
+    else if attributeType == Html.Inert.Property then
+        findAttributeInFacts False name facts
+    else
+        Invalid
 
 
 {-| Matches elements that have all the given style properties (and possibly others as well).
@@ -307,6 +352,54 @@ checked =
 
 
 -- HELPERS
+
+
+findAttributeInFacts : Bool -> String -> ElmHtml.InternalTypes.Facts a -> Selector
+findAttributeInFacts caseInsensitive name facts =
+    let
+        lookup =
+            case caseInsensitive of
+                True ->
+                    dictGetCaseInsensitive
+
+                False ->
+                    Dict.get
+    in
+    facts.stringAttributes
+        |> lookup name
+        |> Maybe.map (namedAttr name)
+        |> orElseLazy
+            (\_ ->
+                facts.boolAttributes
+                    |> lookup name
+                    |> Maybe.map (namedBoolAttr name)
+            )
+        |> Maybe.withDefault Invalid
+
+
+findInList : (a -> Bool) -> List a -> Maybe a
+findInList predicate list =
+    case list of
+        [] ->
+            Nothing
+
+        first :: rest ->
+            if predicate first then
+                Just first
+            else
+                findInList predicate rest
+
+
+dictGetCaseInsensitive : String -> Dict String a -> Maybe a
+dictGetCaseInsensitive key dict =
+    let
+        keyToLower =
+            String.toLower key
+    in
+    dict
+        |> Dict.toList
+        |> findInList (\( k, v ) -> String.toLower k == keyToLower)
+        |> Maybe.map Tuple.second
 
 
 orElseLazy : (() -> Maybe a) -> Maybe a -> Maybe a
