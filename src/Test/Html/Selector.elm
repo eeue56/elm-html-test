@@ -124,7 +124,7 @@ class =
 {-| Matches the element's exact class attribute string.
 
 This is used less often than [`class`](#class), [`classes`](#classes) or
-[`attribute`](#attribute), which check for the _presence_ of a class as opposed
+[`attribute`](#attribute), which check for the *presence* of a class as opposed
 to matching the entire class attribute exactly.
 
     import Html
@@ -195,64 +195,7 @@ tag name =
 {-| Matches elements that have the given attribute in a way that makes sense
 given their semantics in `Html`.
 
-
-#### How matching works:
-
-  - `Html.Attributes.class` and `Html.Attributes.classList` will work the same as
-    `Selectors.classes`, matching any element with at least the given classes.
-
-  - `Html.Attributes.style` will work the same way as `Selectors.styles`, matching
-    any element with at least the given style properties.
-
-  - Any other `String` attributes like `title` or `Bool` attributes like
-    `disabled` will match elements with the exact value for those attributes.
-
-  - Any attributes from `Html.Events`, or attributes with values that have types
-    other than `String` or `Bool` will not match anything.
-
-The example below demonstrates usage
-
-    import Html
-    import Html.Attributes as Attr
-    import Test exposing (test)
-    import Test.Html.Query as Query
-    import Test.Html.Selector exposing (attribute, text)
-
-    tests =
-        describe "attributes"
-            [ test "the welcome <h1> says hello!" <|
-                \() ->
-                    Html.div [] [ Html.h1 [ Attr.title "greeting" ] [ Html.text "Hello!" ] ]
-                        |> Query.fromHtml
-                        |> Query.find [ attribute <| Attr.title "greeting" ]
-                        |> Query.has [ text "Hello!" ]
-            , test "the .Hello.World div has the class Hello" <|
-                \() ->
-                    Html.div
-                        [ Attr.classList
-                            [ ( True, "Hello" )
-                            , ( True, "World" )
-                            ]
-                        ]
-                        |> Query.fromHtml
-                        |> Query.find
-                            [ attribute <|
-                                Attr.classList [ ( True, Hello ) ]
-                            ]
-            , test "the header is red" <|
-                \() ->
-                    Html.header
-                        [ Attr.style
-                            [ ( "backround-color", "red" )
-                            , ( "color", "yellow" )
-                            ]
-                        ]
-                        |> Query.fromHtml
-                        |> Query.find
-                            [ attribute <|
-                                Attr.style [ ( "backround-color", "red" ) ]
-                            ]
-            ]
+See [Selecting elements by `Html.Attribute msg` in the README](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest#selecting-elements-by-html-attribute-msg-)
 
 -}
 attribute : Attribute Never -> Selector
@@ -269,28 +212,28 @@ attribute attr =
         attributeType =
             Html.Inert.attributeType attr
     in
-    if attributeType == Html.Inert.Style then
-        facts.styles
-            |> Dict.toList
-            |> Style
-    else if String.toLower name == "class" && attributeType == Html.Inert.Attribute then
-        facts.stringAttributes
-            |> dictGetCaseInsensitive name
-            |> Maybe.map (String.split " ")
-            |> Maybe.withDefault []
-            |> Classes
-    else if name == "className" && attributeType == Html.Inert.Property then
-        facts.stringAttributes
-            |> Dict.get "className"
-            |> Maybe.map (String.split " ")
-            |> Maybe.withDefault []
-            |> Classes
-    else if attributeType == Html.Inert.Attribute then
-        findAttributeInFacts True name facts
-    else if attributeType == Html.Inert.Property then
-        findAttributeInFacts False name facts
-    else
-        Invalid
+        if attributeType == Html.Inert.Style then
+            facts.styles
+                |> Dict.toList
+                |> Style
+        else if String.toLower name == "class" && attributeType == Html.Inert.Attribute then
+            facts.stringAttributes
+                |> Dict.get name
+                |> Maybe.map (String.split " ")
+                |> Maybe.withDefault []
+                |> Classes
+        else if name == "className" && attributeType == Html.Inert.Property then
+            facts.stringAttributes
+                |> Dict.get "className"
+                |> Maybe.map (String.split " ")
+                |> Maybe.withDefault []
+                |> Classes
+        else if attributeType == Html.Inert.Attribute then
+            findAttributeInFacts name facts
+        else if attributeType == Html.Inert.Property then
+            findAttributeInFacts name facts
+        else
+            Invalid
 
 
 {-| Matches elements that have all the given style properties (and possibly others as well).
@@ -354,52 +297,18 @@ checked =
 -- HELPERS
 
 
-findAttributeInFacts : Bool -> String -> ElmHtml.InternalTypes.Facts a -> Selector
-findAttributeInFacts caseInsensitive name facts =
-    let
-        lookup =
-            case caseInsensitive of
-                True ->
-                    dictGetCaseInsensitive
-
-                False ->
-                    Dict.get
-    in
+findAttributeInFacts : String -> ElmHtml.InternalTypes.Facts a -> Selector
+findAttributeInFacts name facts =
     facts.stringAttributes
-        |> lookup name
+        |> Dict.get name
         |> Maybe.map (namedAttr name)
         |> orElseLazy
             (\_ ->
                 facts.boolAttributes
-                    |> lookup name
+                    |> Dict.get name
                     |> Maybe.map (namedBoolAttr name)
             )
         |> Maybe.withDefault Invalid
-
-
-findInList : (a -> Bool) -> List a -> Maybe a
-findInList predicate list =
-    case list of
-        [] ->
-            Nothing
-
-        first :: rest ->
-            if predicate first then
-                Just first
-            else
-                findInList predicate rest
-
-
-dictGetCaseInsensitive : String -> Dict String a -> Maybe a
-dictGetCaseInsensitive key dict =
-    let
-        keyToLower =
-            String.toLower key
-    in
-    dict
-        |> Dict.toList
-        |> findInList (\( k, v ) -> String.toLower k == keyToLower)
-        |> Maybe.map Tuple.second
 
 
 orElseLazy : (() -> Maybe a) -> Maybe a -> Maybe a
