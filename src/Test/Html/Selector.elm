@@ -2,18 +2,17 @@ module Test.Html.Selector
     exposing
         ( Selector
         , all
-        , id
         , attribute
-        , boolAttribute
+        , checked
         , class
         , classes
-        , className
+        , disabled
+        , exactClassName
+        , id
+        , selected
         , style
         , tag
         , text
-        , checked
-        , selected
-        , disabled
         )
 
 {-| Selecting HTML elements.
@@ -23,15 +22,19 @@ module Test.Html.Selector
 
 ## General Selectors
 
-@docs tag, text, attribute, boolAttribute, all
+@docs tag, text, attribute, all
 
 
 ## Attributes
 
-@docs id, class, classes, className, style, checked, selected, disabled
+@docs id, class, classes, exactClassName, style, checked, selected, disabled
 
 -}
 
+import ElmHtml.InternalTypes
+import Html exposing (Attribute)
+import Html.Inert
+import Json.Decode
 import Test.Html.Selector.Internal as Internal exposing (..)
 
 
@@ -120,26 +123,26 @@ class =
 
 {-| Matches the element's exact class attribute string.
 
-This is used less often than [`class`](#class) or [`classes`](#classes), which
-check for the *presence* of a class as opposed to matching the entire class
-attribute exactly.
+This is used less often than [`class`](#class), [`classes`](#classes) or
+[`attribute`](#attribute), which check for the *presence* of a class as opposed
+to matching the entire class attribute exactly.
 
     import Html
     import Html.Attributes as Attr
     import Test.Html.Query as Query
     import Test exposing (test)
-    import Test.Html.Selector exposing (className)
+    import Test.Html.Selector exposing (exactClassName)
 
 
     test "Button has the exact class 'btn btn-large'" <|
         \() ->
             Html.button [ Attr.class "btn btn-large" ] [ Html.text "Reply" ]
                 |> Query.fromHtml
-                |> Query.has [ className "btn btn-large" ]
+                |> Query.has [ exactClassName "btn btn-large" ]
 
 -}
-className : String -> Selector
-className =
+exactClassName : String -> Selector
+exactClassName =
     namedAttr "className"
 
 
@@ -186,68 +189,51 @@ id =
 -}
 tag : String -> Selector
 tag name =
-    Tag
-        { name = name
-        , asString = "tag " ++ toString name
-        }
+    Tag name
 
 
-{-| Matches elements that have the given attribute with the given string value.
+{-| Matches elements that have the given attribute in a way that makes sense
+given their semantics in `Html`.
 
-For attributes with boolean values, such as `checked`, use [`boolAttribute`](#boolAttribute).
-
-    import Html
-    import Html.Attributes as Attr
-    import Test.Html.Query as Query
-    import Test exposing (test)
-    import Test.Html.Selector exposing (attribute, text)
-
-
-    test "the welcome <h1> says hello!" <|
-        \() ->
-            Html.div []
-                [ Html.h1 [ Attr.title "greeting" ] [ Html.text "Hello!" ] ]
-                |> Query.fromHtml
-                |> Query.find [ attribute "title" "greeting" ]
-                |> Query.has [ text "Hello!" ]
+See [Selecting elements by `Html.Attribute msg` in the README](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest#selecting-elements-by-html-attribute-msg-)
 
 -}
-attribute : String -> String -> Selector
-attribute name value =
-    Attribute
-        { name = name
-        , value = value
-        , asString = "attribute " ++ toString name ++ " " ++ toString value
-        }
+attribute : Attribute Never -> Selector
+attribute attr =
+    case Html.Inert.parseAttribute attr of
+        ElmHtml.InternalTypes.Attribute { key, value } ->
+            if String.toLower key == "class" then
+                value
+                    |> String.split " "
+                    |> Classes
+            else
+                namedAttr key value
 
+        ElmHtml.InternalTypes.Property { key, value } ->
+            if key == "className" then
+                value
+                    |> Json.Decode.decodeValue Json.Decode.string
+                    |> Result.map (String.split " ")
+                    |> Result.withDefault []
+                    |> Classes
+            else
+                value
+                    |> Json.Decode.decodeValue Json.Decode.string
+                    |> Result.map (namedAttr key)
+                    |> orElseLazy
+                        (\() ->
+                            value
+                                |> Json.Decode.decodeValue Json.Decode.bool
+                                |> Result.map (namedBoolAttr key)
+                        )
+                    |> Result.withDefault Invalid
 
-{-| Matches elements that have the given attribute with the given boolean value.
+        ElmHtml.InternalTypes.Styles styles ->
+            Style styles
 
-For attributes with string values, such as `title`, use [`attribute`](#attribute).
+        _ ->
+            Invalid
 
-    import Html
-    import Html.Attributes as Attr
-    import Test.Html.Query as Query
-    import Test exposing (test)
-    import Test.Html.Selector exposing (boolAttribute, text)
-
-
-    test "the disabled button says Reply" <|
-        \() ->
-            Html.div []
-                [ Html.button [ Attr.disabled True ] [ Html.text "Reply" ] ]
-                |> Query.fromHtml
-                |> Query.find [ boolAttribute "disabled" True ]
-                |> Query.has [ text "Reply" ]
-
--}
-boolAttribute : String -> Bool -> Selector
-boolAttribute name value =
-    BoolAttribute
-        { name = name
-        , value = value
-        , asString = "boolAttribute " ++ toString name ++ " " ++ toString value
-        }
 
 {-| Matches elements that have all the given style properties (and possibly others as well).
 
@@ -265,7 +251,7 @@ boolAttribute name value =
                 |> Query.has [ style [ ( "color", "red" ) ] ]
 
 -}
-style : List (String, String) -> Selector
+style : List ( String, String ) -> Selector
 style style =
     Style style
 
@@ -307,22 +293,14 @@ checked =
 
 
 
--- HELPERS --
+-- HELPERS
 
 
-namedAttr : String -> String -> Selector
-namedAttr name value =
-    Attribute
-        { name = name
-        , value = value
-        , asString = name ++ " " ++ toString value
-        }
+orElseLazy : (() -> Result x a) -> Result x a -> Result x a
+orElseLazy fma mb =
+    case mb of
+        Err _ ->
+            fma ()
 
-
-namedBoolAttr : String -> Bool -> Selector
-namedBoolAttr name value =
-    BoolAttribute
-        { name = name
-        , value = value
-        , asString = name ++ " " ++ toString value
-        }
+        Ok _ ->
+            mb

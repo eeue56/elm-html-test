@@ -46,7 +46,7 @@ testRoot output =
             , test "recognizes its exact className" <|
                 \() ->
                     output
-                        |> Query.has [ className "root" ]
+                        |> Query.has [ exactClassName "root" ]
             , test "recognizes its class by classes" <|
                 \() ->
                     output
@@ -87,7 +87,7 @@ testFind output =
                 \() ->
                     output
                         |> Query.find []
-                        |> Query.has [ className "container" ]
+                        |> Query.has [ exactClassName "container" ]
             , test "recognizes its class by classes" <|
                 \() ->
                     output
@@ -127,7 +127,7 @@ testFindAll output =
                 \() ->
                     output
                         |> Query.findAll []
-                        |> Query.each (Query.has [ className "container" ])
+                        |> Query.each (Query.has [ exactClassName "container" ])
             , test "recognizes its class by classes" <|
                 \() ->
                     output

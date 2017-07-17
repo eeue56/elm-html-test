@@ -45,6 +45,76 @@ expected. For example, [`count`](http://package.elm-lang.org/packages/eeue56/elm
 If you have a `Multiple` and want to use an expectation that works on a `Single`,
 such as [`Query.has`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Query#has), you can use [`Query.each`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Query#each) to run the expectation on each of the elements in the `Multiple`.
 
+## Selecting elements by `Html.Attribute msg`
+
+Ordinary `Html.Attribute msg` values can be used to select elements using
+`Test.Html.Selector.attribute`. It is important when using this selector to
+understand its behavior.
+
+- `Html.Attributes.class` and `Html.Attributes.classList` will work the same as
+  [`Test.Html.Selector.classes`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Selector#classes),
+  matching any element with at least the given classes. This behavior echoes
+  that of `element.querySelectorAll('.my-class')` from JavaScript, where any
+  element with at least `.my-class` will match the query.
+
+- `Html.Attributes.style` will work the same way as
+  [`Test.Html.Selector.styles`](http://package.elm-lang.org/packages/eeue56/elm-html-test/latest/Test-Html-Selector#styles),
+  matching any element with at least the given style properties.
+
+- Any other `String` attributes and properties like `title`, or `Bool`
+  attributes like `disabled` will match elements with the exact value for those
+  attributes.
+
+- Any attributes from `Html.Events`, or attributes with values that have types
+  other than `String` or `Bool` will not match anything.
+
+The example below demonstrates usage
+
+```elm
+import Html
+import Html.Attributes as Attr
+import Test exposing (test, describe)
+import Test.Html.Query as Query
+import Test.Html.Selector exposing (attribute, text)
+
+tests =
+    describe "attributes"
+        [ test "the welcome <h1> says hello!" <|
+            \() ->
+                Html.div [] [ Html.h1 [ Attr.title "greeting" ] [ Html.text "Hello!" ] ]
+                    |> Query.fromHtml
+                    |> Query.find [ attribute <| Attr.title "greeting" ]
+                    |> Query.has [ text "Hello!" ]
+        , test "the .Hello.World div has the class Hello" <|
+            \() ->
+                Html.div
+                    [ Attr.classList
+                        [ ( True, "Hello" )
+                        , ( True, "World" )
+                        ]
+                    ]
+                    |> Query.fromHtml
+                    |> Query.find
+                        [ attribute <|
+                            Attr.classList [ ( True, Hello ) ]
+                        ]
+        , test "the header is red" <|
+            \() ->
+                Html.header
+                    [ Attr.style
+                        [ ( "backround-color", "red" )
+                        , ( "color", "yellow" )
+                        ]
+                    ]
+                    |> Query.fromHtml
+                    |> Query.find
+                        [ attribute <|
+                            Attr.style [ ( "backround-color", "red" ) ]
+                        ]
+        ]
+```
+
+
 ## Releases
 | Version | Notes |
 | ------- | ----- |

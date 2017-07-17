@@ -1,10 +1,11 @@
 module TestExample exposing (all)
 
 import Expect
+import Html.Attributes exposing (href)
 import Test exposing (..)
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (..)
-import ExampleApp exposing (view, exampleModel)
+import ExampleApp exposing (exampleModel, view)
 
 
 all : Test
@@ -29,9 +30,13 @@ all =
             , test "expect header to have 3 links in it" <|
                 \() ->
                     output
-                        |> Query.find [ id "heading" ]
                         |> Query.findAll [ tag "a" ]
                         |> Query.count (Expect.equal 3)
+            , test "expect header to have a link to the Elm homepage" <|
+                \() ->
+                    output
+                        |> Query.find [ id "heading" ]
+                        |> Query.has [ attribute <| href "http://elm-lang.org" ]
             , test "expect footer to have footer text" <|
                 \() ->
                     output

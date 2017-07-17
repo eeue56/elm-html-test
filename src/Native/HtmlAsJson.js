@@ -18,6 +18,9 @@ var _eeue56$elm_html_test$Native_HtmlAsJson = (function() {
         },
         taggerFunction: function (tagger) {
             return tagger;
+        },
+        attributeToJson: function(attribute) {
+          return attribute;
         }
     };
 })();
