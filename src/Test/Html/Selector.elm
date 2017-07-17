@@ -31,10 +31,10 @@ module Test.Html.Selector
 
 -}
 
-import Dict exposing (Dict)
 import ElmHtml.InternalTypes
 import Html exposing (Attribute)
 import Html.Inert
+import Json.Decode
 import Test.Html.Selector.Internal as Internal exposing (..)
 
 
@@ -200,39 +200,38 @@ See [Selecting elements by `Html.Attribute msg` in the README](http://package.el
 -}
 attribute : Attribute Never -> Selector
 attribute attr =
-    let
-        facts =
-            Html.div [ attr ] []
-                |> Html.Inert.findFacts
-                |> Maybe.withDefault ElmHtml.InternalTypes.emptyFacts
+    case Html.Inert.parseAttribute attr of
+        ElmHtml.InternalTypes.Attribute { key, value } ->
+            if String.toLower key == "class" then
+                value
+                    |> String.split " "
+                    |> Classes
+            else
+                namedAttr key value
 
-        name =
-            Html.Inert.attributeName attr
+        ElmHtml.InternalTypes.Property { key, value } ->
+            if key == "className" then
+                value
+                    |> Json.Decode.decodeValue Json.Decode.string
+                    |> Result.map (String.split " ")
+                    |> Result.withDefault []
+                    |> Classes
+            else
+                value
+                    |> Json.Decode.decodeValue Json.Decode.string
+                    |> Result.map (namedAttr key)
+                    |> orElseLazy
+                        (\() ->
+                            value
+                                |> Json.Decode.decodeValue Json.Decode.bool
+                                |> Result.map (namedBoolAttr key)
+                        )
+                    |> Result.withDefault Invalid
 
-        attributeType =
-            Html.Inert.attributeType attr
-    in
-        if attributeType == Html.Inert.Style then
-            facts.styles
-                |> Dict.toList
-                |> Style
-        else if String.toLower name == "class" && attributeType == Html.Inert.Attribute then
-            facts.stringAttributes
-                |> Dict.get name
-                |> Maybe.map (String.split " ")
-                |> Maybe.withDefault []
-                |> Classes
-        else if name == "className" && attributeType == Html.Inert.Property then
-            facts.stringAttributes
-                |> Dict.get "className"
-                |> Maybe.map (String.split " ")
-                |> Maybe.withDefault []
-                |> Classes
-        else if attributeType == Html.Inert.Attribute then
-            findAttributeInFacts name facts
-        else if attributeType == Html.Inert.Property then
-            findAttributeInFacts name facts
-        else
+        ElmHtml.InternalTypes.Styles styles ->
+            Style styles
+
+        _ ->
             Invalid
 
 
@@ -297,25 +296,11 @@ checked =
 -- HELPERS
 
 
-findAttributeInFacts : String -> ElmHtml.InternalTypes.Facts a -> Selector
-findAttributeInFacts name facts =
-    facts.stringAttributes
-        |> Dict.get name
-        |> Maybe.map (namedAttr name)
-        |> orElseLazy
-            (\_ ->
-                facts.boolAttributes
-                    |> Dict.get name
-                    |> Maybe.map (namedBoolAttr name)
-            )
-        |> Maybe.withDefault Invalid
-
-
-orElseLazy : (() -> Maybe a) -> Maybe a -> Maybe a
+orElseLazy : (() -> Result x a) -> Result x a -> Result x a
 orElseLazy fma mb =
     case mb of
-        Nothing ->
+        Err _ ->
             fma ()
 
-        Just _ ->
+        Ok _ ->
             mb

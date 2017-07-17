@@ -1,9 +1,9 @@
-module Html.Inert exposing (AttributeType(..), Node, attributeName, attributeType, findFacts, fromElmHtml, fromHtml, toElmHtml)
+module Html.Inert exposing (Node, parseAttribute, fromElmHtml, fromHtml, toElmHtml)
 
 {-| Inert Html - that is, can't do anything with events.
 -}
 
-import ElmHtml.InternalTypes exposing (ElmHtml(..), EventHandler, Facts, Tagger, decodeElmHtml)
+import ElmHtml.InternalTypes exposing (ElmHtml(..), EventHandler, Facts, Tagger, decodeElmHtml, decodeAttribute)
 import Html exposing (Html)
 import Json.Decode
 import Native.HtmlAsJson
@@ -40,25 +40,6 @@ toElmHtml (Node elmHtml) =
     elmHtml
 
 
-findFacts : Html msg -> Maybe (Facts msg)
-findFacts node =
-    case toElmHtml (fromHtml node) of
-        NodeEntry { facts } ->
-            Just facts
-
-        CustomNode { facts } ->
-            Just facts
-
-        MarkdownNode { facts } ->
-            Just facts
-
-        TextTag _ ->
-            Nothing
-
-        NoOp ->
-            Nothing
-
-
 impossibleMessage : String
 impossibleMessage =
     "An Inert Node fired an event handler. This should never happen! Please report this bug."
@@ -69,69 +50,14 @@ attributeToJson attribute =
     Native.HtmlAsJson.attributeToJson attribute
 
 
-attributeNameDecoder : Json.Decode.Decoder String
-attributeNameDecoder =
-    Json.Decode.field "key" Json.Decode.string
-        |> Json.Decode.andThen
-            (\key ->
-                if key == "STYLE" then
-                    Json.Decode.succeed "style"
-                else if key == "ATTR" || key == "ATTR_NS" || key == "EVENT" then
-                    Json.Decode.field "realKey" Json.Decode.string
-                else
-                    Json.Decode.succeed key
-            )
-
-
-type AttributeType
-    = Attribute
-    | NamespacedAttribute
-    | Event
-    | Style
-    | Property
-
-
-attributeTypeDecoder : Json.Decode.Decoder AttributeType
-attributeTypeDecoder =
-    Json.Decode.field "key" Json.Decode.string
-        |> Json.Decode.map
-            (\key ->
-                case key of
-                    "ATTR" ->
-                        Attribute
-
-                    "ATTR_NS" ->
-                        NamespacedAttribute
-
-                    "EVENT" ->
-                        Event
-
-                    "STYLE" ->
-                        Style
-
-                    _ ->
-                        Property
-            )
-
-
-attributeType : Html.Attribute a -> AttributeType
-attributeType attribute =
-    case Json.Decode.decodeValue attributeTypeDecoder (attributeToJson attribute) of
-        Ok attributeType ->
-            attributeType
+parseAttribute : Html.Attribute a -> ElmHtml.InternalTypes.Attribute
+parseAttribute attr =
+    case Json.Decode.decodeValue decodeAttribute (attributeToJson attr) of
+        Ok parsedAttribute ->
+            parsedAttribute
 
         Err str ->
-            Debug.crash ("Error internally processing Html.Attribute for testing - please report this error message as a bug: " ++ str)
-
-
-attributeName : Html.Attribute a -> String
-attributeName attribute =
-    case Json.Decode.decodeValue attributeNameDecoder (attributeToJson attribute) of
-        Ok name ->
-            name
-
-        Err str ->
-            Debug.crash ("Error internally processing Html.Attribute for testing - please report this error message as a bug: " ++ str)
+            Debug.crash ("Error internally processing Attribute for testing - please report this error message as a bug: " ++ str)
 
 
 {-| Gets the function out of a tagger
