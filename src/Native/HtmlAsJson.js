@@ -1,5 +1,8 @@
 var _eeue56$elm_html_test$Native_HtmlAsJson = (function() {
     function forceThunks(vNode) {
+        if (typeof vNode !== "undefined" && vNode.ctor === "_Tuple2" && !vNode.node) {
+            vNode._1 = forceThunks(vNode._1);
+        }
         if (typeof vNode !== 'undefined' && vNode.type === 'thunk' && !vNode.node) {
             vNode.node = vNode.thunk.apply(vNode.thunk, vNode.args);
         }
