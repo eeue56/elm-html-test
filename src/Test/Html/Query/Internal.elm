@@ -1,11 +1,11 @@
 module Test.Html.Query.Internal exposing (..)
 
-import Test.Html.Selector.Internal as InternalSelector exposing (Selector, selectorToString)
-import Html.Inert as Inert exposing (Node)
 import ElmHtml.InternalTypes exposing (ElmHtml(..))
 import ElmHtml.ToString exposing (nodeToStringWithOptions)
 import Expect exposing (Expectation)
+import Html.Inert as Inert exposing (Node)
 import Test.Html.Descendant as Descendant
+import Test.Html.Selector.Internal as InternalSelector exposing (Selector, selectorToString)
 import Test.Runner
 
 
@@ -80,80 +80,80 @@ toLinesHelp expectationFailure elmHtmlList selectorQueries queryName results =
                 queryName
                 (result :: results)
     in
-        case selectorQueries of
-            [] ->
-                String.join "\n\n" [ queryName, expectationFailure ] :: results
+    case selectorQueries of
+        [] ->
+            String.join "\n\n" [ queryName, expectationFailure ] :: results
 
-            selectorQuery :: rest ->
-                case selectorQuery of
-                    FindAll selectors ->
-                        let
-                            elements =
-                                elmHtmlList
-                                    |> List.concatMap getChildren
-                                    |> InternalSelector.queryAll selectors
-                        in
-                            ("Query.findAll " ++ joinAsList selectorToString selectors)
+        selectorQuery :: rest ->
+            case selectorQuery of
+                FindAll selectors ->
+                    let
+                        elements =
+                            elmHtmlList
+                                |> List.concatMap getChildren
+                                |> InternalSelector.queryAll selectors
+                    in
+                    ("Query.findAll " ++ joinAsList selectorToString selectors)
+                        |> withHtmlContext (getHtmlContext elements)
+                        |> recurse elements rest
+
+                Find selectors ->
+                    let
+                        elements =
+                            elmHtmlList
+                                |> List.concatMap getChildren
+                                |> InternalSelector.queryAll selectors
+
+                        result =
+                            ("Query.find " ++ joinAsList selectorToString selectors)
                                 |> withHtmlContext (getHtmlContext elements)
-                                |> recurse elements rest
+                    in
+                    if List.length elements == 1 then
+                        recurse elements rest result
+                    else
+                        bailOut result
 
-                    Find selectors ->
-                        let
-                            elements =
-                                elmHtmlList
-                                    |> List.concatMap getChildren
-                                    |> InternalSelector.queryAll selectors
+                Children selectors ->
+                    let
+                        elements =
+                            elmHtmlList
+                                |> InternalSelector.queryAllChildren selectors
+                    in
+                    ("Query.children " ++ joinAsList selectorToString selectors)
+                        |> withHtmlContext (getHtmlContext elements)
+                        |> recurse elements rest
 
-                            result =
-                                ("Query.find " ++ joinAsList selectorToString selectors)
-                                    |> withHtmlContext (getHtmlContext elements)
-                        in
-                            if List.length elements == 1 then
-                                recurse elements rest result
-                            else
-                                bailOut result
+                First ->
+                    let
+                        elements =
+                            elmHtmlList
+                                |> List.head
+                                |> Maybe.map (\elem -> [ elem ])
+                                |> Maybe.withDefault []
 
-                    Children selectors ->
-                        let
-                            elements =
-                                elmHtmlList
-                                    |> InternalSelector.queryAllChildren selectors
-                        in
-                            ("Query.children " ++ joinAsList selectorToString selectors)
+                        result =
+                            "Query.first"
                                 |> withHtmlContext (getHtmlContext elements)
-                                |> recurse elements rest
+                    in
+                    if List.length elements == 1 then
+                        recurse elements rest result
+                    else
+                        bailOut result
 
-                    First ->
-                        let
-                            elements =
-                                elmHtmlList
-                                    |> List.head
-                                    |> Maybe.map (\elem -> [ elem ])
-                                    |> Maybe.withDefault []
+                Index index ->
+                    let
+                        elements =
+                            elmHtmlList
+                                |> getElementAt index
 
-                            result =
-                                "Query.first"
-                                    |> withHtmlContext (getHtmlContext elements)
-                        in
-                            if List.length elements == 1 then
-                                recurse elements rest result
-                            else
-                                bailOut result
-
-                    Index index ->
-                        let
-                            elements =
-                                elmHtmlList
-                                    |> getElementAt index
-
-                            result =
-                                ("Query.index " ++ toString index)
-                                    |> withHtmlContext (getHtmlContext elements)
-                        in
-                            if List.length elements == 1 then
-                                recurse elements rest result
-                            else
-                                bailOut result
+                        result =
+                            ("Query.index " ++ toString index)
+                                |> withHtmlContext (getHtmlContext elements)
+                    in
+                    if List.length elements == 1 then
+                        recurse elements rest result
+                    else
+                        bailOut result
 
 
 withHtmlContext : String -> String -> String
@@ -173,9 +173,9 @@ getHtmlContext elmHtmlList =
                     |> toString
                     |> String.length
         in
-            elmHtmlList
-                |> List.indexedMap (printIndented maxDigits)
-                |> String.join "\n\n"
+        elmHtmlList
+            |> List.indexedMap (printIndented maxDigits)
+            |> String.join "\n\n"
 
 
 joinAsList : (a -> String) -> List a -> String
@@ -197,15 +197,15 @@ printIndented maxDigits index elmHtml =
         indentation =
             String.repeat (String.length caption) " "
     in
-        case String.split "\n" (prettyPrint elmHtml) of
-            [] ->
-                ""
+    case String.split "\n" (prettyPrint elmHtml) of
+        [] ->
+            ""
 
-            first :: rest ->
-                rest
-                    |> List.map (String.append indentation)
-                    |> (::) (caption ++ first)
-                    |> String.join "\n"
+        first :: rest ->
+            rest
+                |> List.map (String.append indentation)
+                |> (::) (caption ++ first)
+                |> String.join "\n"
 
 
 baseIndentation : String
@@ -236,12 +236,12 @@ getElementAt index list =
         length =
             List.length list
     in
-        -- Avoid attempting % 0
-        if length == 0 then
-            []
-        else
-            -- Support wraparound, e.g. passing -1 to get the last element.
-            getElementAtHelp (index % length) list
+    -- Avoid attempting % 0
+    if length == 0 then
+        []
+    else
+        -- Support wraparound, e.g. passing -1 to get the last element.
+        getElementAtHelp (index % length) list
 
 
 getElementAtHelp : Int -> List a -> List a
@@ -303,10 +303,10 @@ traverseSelector selectorQuery elmHtmlList =
                     elmHtmlList
                         |> getElementAt index
             in
-                if List.length elements == 1 then
-                    Ok elements
-                else
-                    Err (NoResultsForSingle ("Query.index " ++ toString index))
+            if List.length elements == 1 then
+                Ok elements
+            else
+                Err (NoResultsForSingle ("Query.index " ++ toString index))
 
 
 getChildren : ElmHtml msg -> List (ElmHtml msg)
@@ -365,21 +365,21 @@ expectAllHelp successes check list =
                         |> Single False
                         |> check
             in
-                case Test.Runner.getFailure expectation of
-                    Just { given, message } ->
-                        let
-                            prefix =
-                                if successes > 0 then
-                                    "Element #" ++ (toString (successes + 1)) ++ " failed this test:"
-                                else
-                                    "The first element failed this test:"
-                        in
-                            [ prefix, message ]
-                                |> String.join "\n\n"
-                                |> Expect.fail
+            case Test.Runner.getFailure expectation of
+                Just { given, message } ->
+                    let
+                        prefix =
+                            if successes > 0 then
+                                "Element #" ++ toString (successes + 1) ++ " failed this test:"
+                            else
+                                "The first element failed this test:"
+                    in
+                    [ prefix, message ]
+                        |> String.join "\n\n"
+                        |> Expect.fail
 
-                    Nothing ->
-                        expectAllHelp (successes + 1) check rest
+                Nothing ->
+                    expectAllHelp (successes + 1) check rest
 
 
 multipleToExpectation : Multiple msg -> (List (ElmHtml msg) -> Expectation) -> Expectation
@@ -423,17 +423,17 @@ contains expectedDescendants query =
                             missingDescendants
                         )
             in
-                if List.isEmpty missing then
-                    Expect.pass
-                else
-                    Expect.fail
-                        (String.join ""
-                            [ "\t✗ /"
-                            , toString <| List.length missing
-                            , "\\ missing descendants: \n\n"
-                            , prettyPrint missing
-                            ]
-                        )
+            if List.isEmpty missing then
+                Expect.pass
+            else
+                Expect.fail
+                    (String.join ""
+                        [ "\t✗ /"
+                        , toString <| List.length missing
+                        , "\\ missing descendants: \n\n"
+                        , prettyPrint missing
+                        ]
+                    )
 
         Err error ->
             Expect.fail (queryErrorToString query error)
@@ -446,7 +446,7 @@ missingDescendants elmHtmlList expected =
             \expectedDescendant ->
                 not <| Descendant.isDescendant elmHtmlList expectedDescendant
     in
-        List.filter isMissing expected
+    List.filter isMissing expected
 
 
 has : List Selector -> Query msg -> Expectation
@@ -497,7 +497,7 @@ showSelectorOutcome elmHtmlList selector =
                 _ ->
                     "✓"
     in
-        String.join " " [ outcome, "has", selectorToString selector ]
+    String.join " " [ outcome, "has", selectorToString selector ]
 
 
 showSelectorOutcomeInverse : List (ElmHtml msg) -> Selector -> String
@@ -511,7 +511,7 @@ showSelectorOutcomeInverse elmHtmlList selector =
                 _ ->
                     "✗"
     in
-        String.join " " [ outcome, "has not", selectorToString selector ]
+    String.join " " [ outcome, "has not", selectorToString selector ]
 
 
 
@@ -533,9 +533,9 @@ failWithQuery showTrace queryName query expectation =
                     else
                         lines
             in
-                tracedLines
-                    |> String.join "\n\n\n"
-                    |> Expect.fail
+            tracedLines
+                |> String.join "\n\n\n"
+                |> Expect.fail
 
         Nothing ->
             expectation
