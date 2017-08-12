@@ -1,18 +1,19 @@
 module Test.Html.Query
     exposing
-        ( Single
-        , Multiple
-        , fromHtml
+        ( Multiple
+        , Single
+        , children
+        , contains
+        , count
+        , each
         , find
         , findAll
-        , children
         , first
-        , index
-        , count
-        , contains
+        , fromHtml
         , has
         , hasNot
-        , each
+        , index
+        , keep
         )
 
 {-| Querying HTML structure.
@@ -22,7 +23,7 @@ module Test.Html.Query
 
 ## Querying
 
-@docs find, findAll, children, first, index
+@docs find, findAll, children, first, index, keep
 
 
 ## Expecting
@@ -31,12 +32,12 @@ module Test.Html.Query
 
 -}
 
-import Html exposing (Html)
-import Test.Html.Selector.Internal as Selector exposing (Selector, selectorToString)
-import Test.Html.Query.Internal as Internal exposing (QueryError(..), failWithQuery)
-import Html.Inert as Inert
-import Expect exposing (Expectation)
 import ElmHtml.InternalTypes exposing (ElmHtml)
+import Expect exposing (Expectation)
+import Html exposing (Html)
+import Html.Inert as Inert
+import Test.Html.Query.Internal as Internal exposing (QueryError(..), failWithQuery)
+import Test.Html.Selector.Internal as Selector exposing (Selector, selectorToString)
 
 
 {- DESIGN NOTES:
@@ -130,6 +131,42 @@ fromHtml html =
 findAll : List Selector -> Single msg -> Multiple msg
 findAll selectors (Internal.Single showTrace query) =
     Internal.FindAll selectors
+        |> Internal.prependSelector query
+        |> Internal.Multiple showTrace
+
+
+{-| Find the descendant elements of the result of `findAll` which match all the given selectors.
+
+    import Html exposing (div, ul, li)
+    import Html.Attributes exposing (class)
+    import Test.Html.Query as Query
+    import Test exposing (test)
+    import Test.Html.Selector exposing (tag)
+    import Expect
+
+
+    test "The list has three items" <|
+        \() ->
+            div []
+                [ ul [ class "items active" ]
+                    [ li [] [ a [] [ text "first item" ]]
+                    , li [] [ a [] [ text "second item" ]]
+                    , li [] [ a [] [ text "third item" ]]
+                    , li [] [ button [] [ text "button" ]]
+                    ]
+                ]
+                |> Query.fromHtml
+                |> Query.findAll [ tag "li" ]
+                |> Query.keep ( tag "a" )
+                |> Expect.all
+                    [ Query.each (Query.has [ tag "a" ])
+                    , Query.first >> Query.has [ text "first item" ]
+                    ]
+
+-}
+keep : Selector -> Multiple msg -> Multiple msg
+keep selector (Internal.Multiple showTrace query) =
+    Internal.FindAll [ selector ]
         |> Internal.prependSelector query
         |> Internal.Multiple showTrace
 
@@ -334,17 +371,15 @@ contains expectedHtml (Internal.Single showTrace query) =
         expectedElmHtml =
             List.map htmlToElm expectedHtml
     in
-        Internal.contains
-            expectedElmHtml
-            query
-            |> failWithQuery showTrace "Query.contains" query
+    Internal.contains
+        expectedElmHtml
+        query
+        |> failWithQuery showTrace "Query.contains" query
 
 
 htmlToElm : Html msg -> ElmHtml msg
 htmlToElm =
     Inert.fromHtml >> Inert.toElmHtml
-
-
 
 
 {-| Expect the element to match all of the given selectors.
@@ -399,8 +434,8 @@ hasNot selectors (Internal.Single showTrace query) =
         queryName =
             "Query.hasNot " ++ Internal.joinAsList selectorToString selectors
     in
-        Internal.hasNot selectors query
-            |> failWithQuery showTrace queryName query
+    Internal.hasNot selectors query
+        |> failWithQuery showTrace queryName query
 
 
 {-| Expect that a [`Single`](#Single) expectation will hold true for each of the
