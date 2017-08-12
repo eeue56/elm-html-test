@@ -6,7 +6,6 @@ module Test.Html.Query
         , contains
         , count
         , each
-        , filterMap
         , find
         , findAll
         , first
@@ -14,6 +13,7 @@ module Test.Html.Query
         , has
         , hasNot
         , index
+        , keep
         )
 
 {-| Querying HTML structure.
@@ -23,7 +23,7 @@ module Test.Html.Query
 
 ## Querying
 
-@docs find, findAll, children, first, index
+@docs find, findAll, children, first, index, keep
 
 
 ## Expecting
@@ -157,16 +157,16 @@ findAll selectors (Internal.Single showTrace query) =
                 ]
                 |> Query.fromHtml
                 |> Query.findAll [ tag "li" ]
-                |> Query.filterMap [ tag "a" ]
+                |> Query.keep ( tag "a" )
                 |> Expect.all
                     [ Query.each (Query.has [ tag "a" ])
                     , Query.first >> Query.has [ text "first item" ]
                     ]
 
 -}
-filterMap : List Selector -> Multiple msg -> Multiple msg
-filterMap selectors (Internal.Multiple showTrace query) =
-    Internal.FindAll selectors
+keep : Selector -> Multiple msg -> Multiple msg
+keep selector (Internal.Multiple showTrace query) =
+    Internal.FindAll [ selector ]
         |> Internal.prependSelector query
         |> Internal.Multiple showTrace
 

@@ -24,7 +24,7 @@ lazyTests =
 testers : List (Single msg -> Test)
 testers =
     [ testFindAll
-    , testFilterMap
+    , testKeep
     , testFind
     , testRoot
     , testFirst
@@ -160,31 +160,31 @@ testFindAll output =
         ]
 
 
-testFilterMap : Single msg -> Test
-testFilterMap output =
-    describe "Query.filterMap"
-        [ test "filter and map the result of findAll" <|
+testKeep : Single msg -> Test
+testKeep output =
+    describe "Query.keep"
+        [ test "only keep a subsect of a result" <|
             \() ->
                 output
                     |> Query.findAll [ tag "section" ]
-                    |> Query.filterMap [ tag "ul" ]
-                    |> Query.filterMap [ class "list-item" ]
+                    |> Query.keep (tag "ul")
+                    |> Query.keep (class "list-item")
                     |> Expect.all
                         [ Query.each (Query.has [ tag "li" ])
                         , Query.first >> Query.has [ text "first item" ]
                         ]
-        , test "filters in the second section as well" <|
+        , test "keep from the second section as well" <|
             \() ->
                 output
                     |> Query.findAll [ tag "section" ]
-                    |> Query.filterMap [ class "nested-div" ]
+                    |> Query.keep (class "nested-div")
                     |> Query.first
                     |> Query.has [ text "boring section" ]
-        , test "filters elements from both matches" <|
+        , test "keep elements from both matches" <|
             \() ->
                 output
                     |> Query.findAll [ tag "section" ]
-                    |> Query.filterMap [ class "tooltip", class "questions" ]
+                    |> Query.keep (class "tooltip-questions")
                     |> Query.count (Expect.equal 2)
         ]
 
@@ -264,16 +264,16 @@ sampleHtml =
                     , li [ Attr.class "list-item themed" ] [ Html.text "second item" ]
                     , li [ Attr.class "list-item themed selected" ] [ Html.text "third item" ]
                     , li [ Attr.class "list-item themed" ] [ Html.text "fourth item" ]
-                    , span [ Attr.class "tooltip questions" ] [ Html.text "?" ]
+                    , span [ Attr.class "tooltip-questions" ] [ Html.text "?" ]
                     ]
                 ]
             , section []
                 [ div [ Attr.class "nested-div" ] [ Html.text "boring section" ]
-                , span [ Attr.class "tooltip questions" ] [ Html.text "?" ]
+                , span [ Attr.class "tooltip-questions" ] [ Html.text "?" ]
                 ]
             , footer []
                 [ Html.text "this is the footer"
-                , span [ Attr.class "tooltip questions" ] [ Html.text "?" ]
+                , span [ Attr.class "tooltip-questions" ] [ Html.text "?" ]
                 ]
             ]
         ]
@@ -295,13 +295,13 @@ sampleLazyHtml =
                     , Lazy.lazy (\str -> li [ Attr.class "list-item themed" ] [ Html.text str ]) "second item"
                     , Lazy.lazy (\str -> li [ Attr.class "list-item themed selected" ] [ Html.text str ]) "third item"
                     , Lazy.lazy (\str -> li [ Attr.class "list-item themed" ] [ Html.text str ]) "fourth item"
-                    , Lazy.lazy (\str -> span [ Attr.class "tooltip questions" ] [ Html.text str ]) "?"
+                    , Lazy.lazy (\str -> span [ Attr.class "tooltip-questions" ] [ Html.text str ]) "?"
                     ]
                 ]
             , section []
                 [ div [ Attr.class "nested-div" ]
                     [ Html.text "boring section"
-                    , Lazy.lazy (\str -> span [ Attr.class "tooltip questions" ] [ Html.text str ]) "?"
+                    , Lazy.lazy (\str -> span [ Attr.class "tooltip-questions" ] [ Html.text str ]) "?"
                     ]
                 ]
             , footer []
