@@ -117,6 +117,7 @@ toLinesHelp expectationFailure elmHtmlList selectorQueries queryName results =
                     let
                         elements =
                             elmHtmlList
+                                |> List.concatMap getChildren
                                 |> InternalSelector.queryAllChildren selectors
                     in
                     ("Query.children " ++ joinAsList selectorToString selectors)
@@ -288,6 +289,7 @@ traverseSelector selectorQuery elmHtmlList =
 
         Children selectors ->
             elmHtmlList
+                |> List.concatMap getChildren
                 |> InternalSelector.queryAllChildren selectors
                 |> Ok
 
