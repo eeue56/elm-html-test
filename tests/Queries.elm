@@ -233,16 +233,20 @@ testChildren output =
                 \() ->
                     output
                         |> Query.children []
-                        |> Query.count (Expect.equal 1)
-            , test "sees it's a <header id='heading'>" <|
-                \() ->
-                    output
-                        |> Query.children []
-                        |> Query.each (Query.has [ tag "header", id "heading" ])
+                        |> Expect.all
+                            [ Query.count (Expect.equal 1)
+                            , Query.each (Query.hasNot [ class "root" ])
+                            ]
             , test "doesn't see the nested div" <|
                 \() ->
                     output
-                        |> Query.children [ tag "div" ]
+                        |> Query.children [ class "nested-div" ]
+                        |> Query.count (Expect.equal 0)
+            , test "only children which match the selector get returned" <|
+                \() ->
+                    output
+                        |> Query.find [ class "some-list" ]
+                        |> Query.children [ class "selected" ]
                         |> Query.count (Expect.equal 1)
             ]
         ]

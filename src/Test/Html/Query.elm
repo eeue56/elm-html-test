@@ -184,15 +184,15 @@ keep selector (Internal.Multiple showTrace query) =
         \() ->
             div []
                 [ ul [ class "items active" ]
-                    [ li [] [ text "first item" ]
-                    , li [] [ text "second item" ]
-                    , li [] [ text "third item" ]
+                    [ li [ class "item"] [ text "first item" ]
+                    , li [ class "item selected"] [ text "second item" ]
+                    , li [ class "item"] [ text "third item" ]
                     ]
                 ]
                 |> Query.fromHtml
-                |> Query.find [ tag "ul" ]
-                |> Query.children []
-                |> Query.each (Query.has [ tag "li" ])
+                |> Query.find [ class "items" ]
+                |> Query.children [ class "selected" ]
+                |> Query.count (Expect.equal 1)
 
 -}
 children : List Selector -> Single msg -> Multiple msg
