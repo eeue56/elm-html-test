@@ -118,5 +118,14 @@ tests =
 ## Releases
 | Version | Notes |
 | ------- | ----- |
+| [**5.1.2**](https://github.com/eeue56/elm-html-test/tree/5.1.2) | Fix bug with mapped and lazy views
+| [**5.1.1**](https://github.com/eeue56/elm-html-test/tree/5.1.1) | Fix children
+| [**5.1.0**](https://github.com/eeue56/elm-html-test/tree/5.1.0) | Add filtermap
+| [**5.0.1**](https://github.com/eeue56/elm-html-test/tree/5.0.1) | Fix bug with lazy views
+| [**5.0.0**](https://github.com/eeue56/elm-html-test/tree/5.0.0) | Allow querying by attributes
+| [**4.1.0**](https://github.com/eeue56/elm-html-test/tree/4.1.0) | Query styles
+| [**4.0.0**](https://github.com/eeue56/elm-html-test/tree/4.0.0) | Allow custom events
+| [**3.0.0**](https://github.com/eeue56/elm-html-test/tree/3.0.0) | Allow events to be testable
+| [**2.0.0**](https://github.com/eeue56/elm-html-test/tree/2.0.0) | Better support for events by @rogeriochaves
 | [**1.1.0**](https://github.com/eeue56/elm-html-test/tree/1.1.0) | Support for events by @rogeriochaves
 | [**1.0.0**](https://github.com/eeue56/elm-html-test/tree/1.0.0) | Initial release
