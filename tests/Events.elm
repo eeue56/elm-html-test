@@ -4,6 +4,7 @@ import Expect
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes as Attr exposing (href)
 import Html.Events exposing (..)
+import Html.Keyed as Keyed
 import Html.Lazy as Lazy
 import Json.Decode exposing (Value)
 import Json.Encode as Encode
@@ -33,6 +34,20 @@ all =
         , test "returns msg for click on mapped html" <|
             \() ->
                 Query.fromHtml sampleMappedHtml
+                    |> Query.findAll [ tag "button" ]
+                    |> Query.first
+                    |> Event.simulate Event.click
+                    |> Event.expect MappedSampleMsg
+        , test "returns msg for click on mapped lazy html" <|
+            \() ->
+                Query.fromHtml sampleMappedLazyHtml
+                    |> Query.findAll [ tag "button" ]
+                    |> Query.first
+                    |> Event.simulate Event.click
+                    |> Event.expect MappedSampleMsg
+        , test "returns msg for click on mapped keyed html" <|
+            \() ->
+                Query.fromHtml sampleMappedKeyedHtml
                     |> Query.findAll [ tag "button" ]
                     |> Query.first
                     |> Event.simulate Event.click
@@ -112,10 +127,30 @@ sampleMappedHtml =
         ]
 
 
+sampleMappedLazyHtml : Html Msg
+sampleMappedLazyHtml =
+    div [ Attr.class "container" ]
+        [ Html.map (always MappedSampleMsg) <|
+            Lazy.lazy
+                (\str -> button [ onClick SampleMsg ] [ text str ])
+                "click me"
+        ]
+
+
+sampleMappedKeyedHtml : Html Msg
+sampleMappedKeyedHtml =
+    div [ Attr.class "container" ]
+        [ Html.map (always MappedSampleMsg) <|
+            Keyed.node "button"
+                [ onClick SampleMsg ]
+                [ ( "key", text "click me" ) ]
+        ]
+
+
 deepMappedHtml : Html Msg
 deepMappedHtml =
     div []
-        [ Html.map (SampleInputMsg)
+        [ Html.map SampleInputMsg
             (div []
                 [ Html.map (\msg -> msg ++ "bar")
                     (div []
