@@ -227,7 +227,7 @@ list
 |> Maybe.map (\elem -> [ elem ])
 |> Maybe.withDefault []
 
-It also supports wraparound via negative indeces, e.g. passing -1 for an index
+It also supports negative indeces, e.g. passing -1 for an index
 gets you the last element.
 
 -}
@@ -237,8 +237,14 @@ getElementAt index list =
         length =
             List.length list
     in
-    -- Avoid attempting % 0
-    if length == 0 then
+    if
+        -- Avoid attempting % 0
+        (length == 0)
+            -- don't wrap around if index is too high
+            || (index >= length)
+            -- don't wrap around if index is too low
+            || (index < 0 && abs index > length)
+    then
         []
     else
         -- Support wraparound, e.g. passing -1 to get the last element.
