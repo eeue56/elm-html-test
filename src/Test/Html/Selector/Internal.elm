@@ -13,7 +13,7 @@ type Selector
     | Style (List ( String, String ))
     | Tag String
     | Text String
-    | HavingChild (List Selector)
+    | HasChildWith (List Selector)
     | Invalid
 
 
@@ -52,7 +52,7 @@ selectorToString criteria =
         Text text ->
             "text " ++ toString text
 
-        HavingChild list ->
+        HasChildWith list ->
             list
                 |> List.map selectorToString
                 |> String.join " "
@@ -123,7 +123,7 @@ query fn fnAll selector list =
         Text text ->
             List.concatMap (fn (ElmHtml.Query.ContainsText text)) list
 
-        HavingChild selectors ->
+        HasChildWith selectors ->
             List.concatMap
                 (\item ->
                     case query fn fnAll (All selectors) <| ElmHtml.Query.getChildren item of

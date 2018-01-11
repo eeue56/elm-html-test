@@ -8,12 +8,12 @@ module Test.Html.Selector
         , classes
         , disabled
         , exactClassName
+        , hasChildWith
         , id
         , selected
         , style
         , tag
         , text
-        , havingChild
         )
 
 {-| Selecting HTML elements.
@@ -272,23 +272,23 @@ text =
     import Html.Attributes as Attr
     import Test exposing (test)
     import Test.Html.Query as Query
-    import Test.Html.Selector exposing (class, tag, havingChild)
+    import Test.Html.Selector exposing (class, hasChildWith, tag)
 
     test : Test
     test =
-        test "havingChild" <|
+        test "..." <|
             Html.div []
                 [ Html.button [ Attr.class "super-button" ] [ Html.text "click me" ] ]
                 |> Query.find
                     [ tag "button"
-                    , havingChild [ text "click me" ]
+                    , hasChildWith [ text "click me" ]
                     ]
                 |> Query.has [ class "super-button" ]
 
 -}
-havingChild : List Selector -> Selector
-havingChild =
-    Internal.HavingChild
+hasChildWith : List Selector -> Selector
+hasChildWith =
+    Internal.HasChildWith
 
 
 {-| Matches elements that have a

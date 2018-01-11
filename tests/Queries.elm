@@ -30,7 +30,7 @@ testers =
     , testFirst
     , testIndex
     , testChildren
-    , testHavingChild
+    , testHasChildWith
     ]
 
 
@@ -253,14 +253,14 @@ testChildren output =
         ]
 
 
-testHavingChild : Single msg -> Test
-testHavingChild output =
-    test "Selector.havingChild" <|
+testHasChildWith : Single msg -> Test
+testHasChildWith output =
+    test "Selector.hasChildWith" <|
         \() ->
             output
                 |> Query.findAll
                     [ tag "button"
-                    , havingChild [ text "click me" ]
+                    , hasChildWith [ text "click me" ]
                     ]
                 |> Expect.all
                     [ Query.count (Expect.equal 1)
