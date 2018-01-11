@@ -31,6 +31,7 @@ testers =
     , testFirst
     , testIndex
     , testChildren
+    , testHavingChild
     ]
 
 
@@ -313,6 +314,21 @@ testChildren output =
         ]
 
 
+testHavingChild : Single msg -> Test
+testHavingChild output =
+    test "Selector.havingChild" <|
+        \() ->
+            output
+                |> Query.findAll
+                    [ tag "button"
+                    , havingChild [ text "click me" ]
+                    ]
+                |> Expect.all
+                    [ Query.count (Expect.equal 1)
+                    , Query.first >> Query.has [ class "super-button" ]
+                    ]
+
+
 sampleHtml : Html msg
 sampleHtml =
     section [ Attr.class "root", Attr.style [ ( "color", "red" ), ( "background", "purple" ), ( "font-weight", "bold" ) ] ]
@@ -334,6 +350,8 @@ sampleHtml =
                 ]
             , section []
                 [ div [ Attr.class "nested-div" ] [ Html.text "boring section" ]
+                , Html.button [ Attr.class "super-button" ] [ Html.text "click me" ]
+                , Html.button [ Attr.class "other-button" ] [ Html.text "the other button" ]
                 , span [ Attr.class "tooltip-questions" ] [ Html.text "?" ]
                 ]
             , footer []
@@ -366,6 +384,8 @@ sampleLazyHtml =
             , section []
                 [ div [ Attr.class "nested-div" ]
                     [ Html.text "boring section"
+                    , Lazy.lazy (\str -> Html.button [ Attr.class "super-button" ] [ Html.text str ]) "click me"
+                    , Lazy.lazy (\str -> Html.button [ Attr.class "other-button" ] [ Html.text str ]) "the other button"
                     , Lazy.lazy (\str -> span [ Attr.class "tooltip-questions" ] [ Html.text str ]) "?"
                     ]
                 ]
