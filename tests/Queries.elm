@@ -206,21 +206,81 @@ testFirst output =
 testIndex : Single msg -> Test
 testIndex output =
     describe "Query.index"
-        [ describe "Query.index 0" <|
-            [ test "sees it's a <div class='container'>" <|
-                \() ->
-                    output
-                        |> Query.findAll []
-                        |> Query.index 0
-                        |> Query.has [ tag "div", class "container" ]
-            ]
-        , describe "Query.index -1" <|
-            [ test "sees it's a <div class='container'>" <|
+        [ describe "only 1 element"
+            [ test "index -1 matches" <|
                 \() ->
                     output
                         |> Query.findAll []
                         |> Query.index -1
                         |> Query.has [ tag "div", class "container" ]
+            , test "index 0 matches" <|
+                \() ->
+                    output
+                        |> Query.findAll []
+                        |> Query.index 0
+                        |> Query.has [ tag "div", class "container" ]
+            , test "index -2 too low" <|
+                \() ->
+                    output
+                        |> Query.findAll []
+                        |> Query.index -2
+                        |> Query.hasNot [ tag "div" ]
+            , test "index 1 too high" <|
+                \() ->
+                    output
+                        |> Query.findAll []
+                        |> Query.index 1
+                        |> Query.hasNot [ tag "div" ]
+            ]
+        , describe "3 element"
+            [ test "index 0 matches" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "a" ]
+                        |> Query.index 0
+                        |> Query.has [ tag "a", text "home" ]
+            , test "index 1 matches" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "a" ]
+                        |> Query.index 1
+                        |> Query.has [ tag "a", text "examples" ]
+            , test "index 2 matches" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "a" ]
+                        |> Query.index 2
+                        |> Query.has [ tag "a", text "docs" ]
+            , test "index -3 matches" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "a" ]
+                        |> Query.index -3
+                        |> Query.has [ tag "a", text "home" ]
+            , test "index -2 matches" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "a" ]
+                        |> Query.index -2
+                        |> Query.has [ tag "a", text "examples" ]
+            , test "index -1 matches" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "a" ]
+                        |> Query.index -1
+                        |> Query.has [ tag "a", text "docs" ]
+            , test "index -4  too low" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "a" ]
+                        |> Query.index -4
+                        |> Query.hasNot [ tag "a" ]
+            , test "index 3 too high" <|
+                \() ->
+                    output
+                        |> Query.findAll [ tag "a" ]
+                        |> Query.index 3
+                        |> Query.hasNot [ tag "a" ]
             ]
         ]
 
