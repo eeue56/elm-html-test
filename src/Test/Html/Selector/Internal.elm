@@ -70,7 +70,7 @@ queryAll selectors list =
 
         selector :: rest ->
             query ElmHtml.Query.query queryAll selector list
-                |> queryAllChildren rest
+                |> queryAll rest
 
 
 queryAllChildren : List Selector -> List (ElmHtml msg) -> List (ElmHtml msg)
