@@ -461,13 +461,13 @@ has : List Selector -> Query msg -> Expectation
 has selectors query =
     case traverse query of
         Ok elmHtmlList ->
-            if List.isEmpty (InternalSelector.queryAll selectors elmHtmlList) then
+            if InternalSelector.hasAll selectors elmHtmlList then
+                Expect.pass
+            else
                 selectors
                     |> List.map (showSelectorOutcome elmHtmlList)
                     |> String.join "\n"
                     |> Expect.fail
-            else
-                Expect.pass
 
         Err error ->
             Expect.fail (queryErrorToString query error)
