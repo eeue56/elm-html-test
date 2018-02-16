@@ -24,8 +24,10 @@ install:
   - node --version
   - npm --version
   - npm install -g elm@$ELM_VERSION
+  - npm install -g elm-format@exp
   - npm install -g elm-test@beta
 
 
 script:
+  - elm-format --validate .
   - elm-test
