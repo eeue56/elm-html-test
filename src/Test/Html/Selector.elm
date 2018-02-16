@@ -124,7 +124,7 @@ class =
 {-| Matches the element's exact class attribute string.
 
 This is used less often than [`class`](#class), [`classes`](#classes) or
-[`attribute`](#attribute), which check for the *presence* of a class as opposed
+[`attribute`](#attribute), which check for the _presence_ of a class as opposed
 to matching the entire class attribute exactly.
 
     import Html

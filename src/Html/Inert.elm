@@ -1,9 +1,9 @@
-module Html.Inert exposing (Node, parseAttribute, fromElmHtml, fromHtml, toElmHtml)
+module Html.Inert exposing (Node, fromElmHtml, fromHtml, parseAttribute, toElmHtml)
 
 {-| Inert Html - that is, can't do anything with events.
 -}
 
-import ElmHtml.InternalTypes exposing (ElmHtml(..), EventHandler, Facts, Tagger, decodeElmHtml, decodeAttribute)
+import ElmHtml.InternalTypes exposing (ElmHtml(..), EventHandler, Facts, Tagger, decodeAttribute, decodeElmHtml)
 import Html exposing (Html)
 import Json.Decode
 import Native.HtmlAsJson

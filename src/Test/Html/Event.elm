@@ -1,23 +1,23 @@
 module Test.Html.Event
     exposing
         ( Event
-        , simulate
-        , expect
-        , toResult
+        , blur
+        , check
         , click
+        , custom
         , doubleClick
+        , expect
+        , focus
+        , input
         , mouseDown
-        , mouseUp
         , mouseEnter
         , mouseLeave
-        , mouseOver
         , mouseOut
-        , input
-        , check
+        , mouseOver
+        , mouseUp
+        , simulate
         , submit
-        , blur
-        , focus
-        , custom
+        , toResult
         )
 
 {-| This module lets you simulate events on `Html` values and expect that
@@ -36,12 +36,12 @@ they result in certain `Msg` values being sent to `update`.
 -}
 
 import Dict
-import ElmHtml.InternalTypes exposing (ElmHtml, ElmHtml(..), Tagger)
+import ElmHtml.InternalTypes exposing (ElmHtml(..), Tagger)
+import Expect exposing (Expectation)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Test.Html.Query as Query
 import Test.Html.Query.Internal as QueryInternal
-import Expect exposing (Expectation)
 
 
 {-| A simulated event.
@@ -105,7 +105,7 @@ expect msg (Event event (QueryInternal.Single showTrace query)) =
 
 {-| Returns a Result with the Msg produced by the event simulated on a node.
 Note that Event.expect gives nicer messages; this is generally more useful
-when testing that an event handler is *not* present.
+when testing that an event handler is _not_ present.
 
     import Test.Html.Event as Event
 
@@ -127,13 +127,13 @@ toResult (Event ( eventName, jsEvent ) (QueryInternal.Single showTrace query)) =
                 |> Result.andThen (QueryInternal.verifySingle eventName)
                 |> Result.mapError (QueryInternal.queryErrorToString query)
     in
-        case node of
-            Err msg ->
-                Err msg
+    case node of
+        Err msg ->
+            Err msg
 
-            Ok single ->
-                findEvent eventName single
-                    |> Result.andThen (\foundEvent -> Decode.decodeValue foundEvent jsEvent)
+        Ok single ->
+            findEvent eventName single
+                |> Result.andThen (\foundEvent -> Decode.decodeValue foundEvent jsEvent)
 
 
 
@@ -297,18 +297,18 @@ findEvent eventName element =
                 |> Dict.get eventName
                 |> Result.fromMaybe ("Event.expectEvent: The event " ++ eventName ++ " does not exist on the found node.\n\n" ++ elementOutput)
     in
-        case element of
-            TextTag _ ->
-                Err ("Found element is a text, which does not produce events, therefore could not simulate " ++ eventName ++ " on it. Text found: " ++ elementOutput)
+    case element of
+        TextTag _ ->
+            Err ("Found element is a text, which does not produce events, therefore could not simulate " ++ eventName ++ " on it. Text found: " ++ elementOutput)
 
-            NodeEntry node ->
-                eventDecoder node
+        NodeEntry node ->
+            eventDecoder node
 
-            CustomNode node ->
-                eventDecoder node
+        CustomNode node ->
+            eventDecoder node
 
-            MarkdownNode node ->
-                eventDecoder node
+        MarkdownNode node ->
+            eventDecoder node
 
-            NoOp ->
-                Err ("Unknown element found. Could not simulate " ++ eventName ++ " on it.")
+        NoOp ->
+            Err ("Unknown element found. Could not simulate " ++ eventName ++ " on it.")

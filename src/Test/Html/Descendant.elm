@@ -1,7 +1,7 @@
 module Test.Html.Descendant exposing (isDescendant)
 
-import Html exposing (Html)
 import ElmHtml.InternalTypes exposing (ElmHtml(..))
+import Html exposing (Html)
 import Html.Inert exposing (fromHtml, toElmHtml)
 
 
@@ -24,7 +24,7 @@ prependChildren : ElmHtml msg -> List (ElmHtml msg) -> List (ElmHtml msg)
 prependChildren parentNode nodeList =
     case parentNode of
         NodeEntry { children } ->
-            (List.concat [ children, nodeList ])
+            List.concat [ children, nodeList ]
 
         _ ->
             nodeList
