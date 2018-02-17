@@ -62,6 +62,19 @@ styleToString style =
         |> String.join " "
 
 
+hasAll : List Selector -> List (ElmHtml msg) -> Bool
+hasAll selectors elems =
+    case selectors of
+        [] ->
+            True
+
+        selector :: rest ->
+            if List.isEmpty (queryAll [ selector ] elems) then
+                False
+            else
+                hasAll rest elems
+
+
 queryAll : List Selector -> List (ElmHtml msg) -> List (ElmHtml msg)
 queryAll selectors list =
     case selectors of
@@ -70,7 +83,7 @@ queryAll selectors list =
 
         selector :: rest ->
             query ElmHtml.Query.query queryAll selector list
-                |> queryAllChildren rest
+                |> queryAll rest
 
 
 queryAllChildren : List Selector -> List (ElmHtml msg) -> List (ElmHtml msg)

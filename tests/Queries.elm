@@ -1,6 +1,7 @@
 module Queries exposing (..)
 
 import Expect
+import Fuzz
 import Html exposing (Html, a, div, footer, header, li, section, span, ul)
 import Html.Attributes as Attr exposing (href)
 import Html.Lazy as Lazy
@@ -379,3 +380,14 @@ sampleLazyHtml =
 someView : String -> Html msg
 someView str =
     Html.h1 [] [ Html.text str ]
+
+
+testHas : Test
+testHas =
+    describe "Query.has"
+        [ fuzz (Fuzz.list Fuzz.string) "Passes for empty selector list" <|
+            \strings ->
+                Html.div [] (List.map Html.text strings)
+                    |> Query.fromHtml
+                    |> Query.has []
+        ]
