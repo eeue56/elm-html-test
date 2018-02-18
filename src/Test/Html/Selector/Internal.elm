@@ -13,6 +13,7 @@ type Selector
     | Style (List ( String, String ))
     | Tag String
     | Text String
+    | ListensTo String
     | Invalid
 
 
@@ -50,6 +51,9 @@ selectorToString criteria =
 
         Text text ->
             "text " ++ toString text
+
+        ListensTo eventName ->
+            "listensTo " ++ toString eventName
 
         Invalid ->
             "invalid"
@@ -119,6 +123,9 @@ query fn fnAll selector list =
 
         BoolAttribute { name, value } ->
             List.concatMap (fn (ElmHtml.Query.BoolAttribute name value)) list
+
+        ListensTo eventName ->
+            List.concatMap (fn (ElmHtml.Query.ListensTo eventName)) list
 
         Style style ->
             List.concatMap (fn (ElmHtml.Query.Style style)) list

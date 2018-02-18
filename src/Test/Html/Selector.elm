@@ -9,6 +9,7 @@ module Test.Html.Selector
         , disabled
         , exactClassName
         , id
+        , listensTo
         , selected
         , style
         , tag
@@ -27,7 +28,7 @@ module Test.Html.Selector
 
 ## Attributes
 
-@docs id, class, classes, exactClassName, style, checked, selected, disabled
+@docs id, class, classes, exactClassName, listensTo, style, checked, selected, disabled
 
 -}
 
@@ -233,6 +234,11 @@ attribute attr =
 
         _ ->
             Invalid
+
+
+listensTo : String -> Selector
+listensTo eventName =
+    ListensTo eventName
 
 
 {-| Matches elements that have all the given style properties (and possibly others as well).
