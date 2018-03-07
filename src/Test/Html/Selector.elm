@@ -8,6 +8,7 @@ module Test.Html.Selector
         , classes
         , disabled
         , exactClassName
+        , hasChildWith
         , id
         , selected
         , style
@@ -263,6 +264,38 @@ attribute with the given value.
 text : String -> Selector
 text =
     Internal.Text
+
+
+{-| Matches elements that contain children that match the given selectors.
+You will get the element and **not** the child.
+This is useful when you want a sepecific element and continue working with it.
+You can use `Test.Html.Query.contains` if you just want to expect that an element contains some child.
+
+    import Html
+    import Html.Events exposing (onClick)
+    import Test exposing (test)
+    import Test.Html.Event as Event
+    import Test.Html.Query as Query
+    import Test.Html.Selector exposing (hasChildWith, tag)
+
+    test : Test
+    test =
+        test "..." <|
+            Html.div []
+                [ Html.button [ onClick NopeMsg ] [ Html.text "not me" ]
+                , Html.button [ onClick ClickedMsg ] [ Html.text "click me" ]
+                ]
+                |> Query.find
+                    [ tag "button"
+                    , hasChildWith [ text "click me" ]
+                    ]
+                |> Event.simulate Event.click
+                |> Event.expect ClickedMsg
+
+-}
+hasChildWith : List Selector -> Selector
+hasChildWith =
+    Internal.HasChildWith
 
 
 {-| Matches elements that have a
