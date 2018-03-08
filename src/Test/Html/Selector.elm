@@ -266,10 +266,12 @@ text =
     Internal.Text
 
 
-{-| Matches elements whose descendants that match the given selectors.
-You will get the element and **not** the child.
-This is useful when you want a sepecific element and continue working with it.
-You can use `Test.Html.Query.contains` if you just want to expect that an element contains some child.
+{-| Matches elements whose descendants match the given selectors.
+
+(You will get the element and **not** the descendant.)
+
+This is especially useful to find elements which contain specific
+text somewhere in their descendants.
 
     import Html
     import Html.Events exposing (onClick)
