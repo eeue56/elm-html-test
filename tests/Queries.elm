@@ -31,7 +31,7 @@ testers =
     , testFirst
     , testIndex
     , testChildren
-    , testHasChildWith
+    , testContaining
     ]
 
 
@@ -314,19 +314,37 @@ testChildren output =
         ]
 
 
-testHasChildWith : Single msg -> Test
-testHasChildWith output =
-    test "Selector.hasChildWith" <|
-        \() ->
-            output
-                |> Query.findAll
-                    [ tag "button"
-                    , hasChildWith [ text "click me" ]
-                    ]
-                |> Expect.all
-                    [ Query.count (Expect.equal 1)
-                    , Query.first >> Query.has [ class "super-button" ]
-                    ]
+testContaining : Single msg -> Test
+testContaining output =
+    describe "Selector.containing"
+        [ test "when it's a child" <|
+            \() ->
+                output
+                    |> Query.findAll
+                        [ tag "button"
+                        , containing [ text "click me" ]
+                        ]
+                    |> Expect.all
+                        [ Query.count (Expect.equal 1)
+                        , Query.first >> Query.has [ class "super-button" ]
+                        ]
+        , test "when it's a grandchild" <|
+            \() ->
+                output
+                    |> Query.findAll
+                        [ tag "header"
+                        , containing [ text "docs" ]
+                        ]
+                    |> Query.count (Expect.equal 1)
+        , test "when it matches more than one element" <|
+            \() ->
+                output
+                    |> Query.findAll
+                        [ tag "section"
+                        , containing [ text "?" ]
+                        ]
+                    |> Query.count (Expect.equal 2)
+        ]
 
 
 sampleHtml : Html msg

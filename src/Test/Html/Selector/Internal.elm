@@ -13,7 +13,7 @@ type Selector
     | Style (List ( String, String ))
     | Tag String
     | Text String
-    | HasChildWith (List Selector)
+    | Containing (List Selector)
     | Invalid
 
 
@@ -52,11 +52,14 @@ selectorToString criteria =
         Text text ->
             "text " ++ toString text
 
-        HasChildWith list ->
-            list
-                |> List.map selectorToString
-                |> String.join " "
-                |> (++) "with children "
+        Containing list ->
+            let
+                selectors =
+                    list
+                        |> List.map selectorToString
+                        |> String.join ", "
+            in
+            "containing [ " ++ selectors ++ " ] "
 
         Invalid ->
             "invalid"
@@ -111,45 +114,60 @@ query :
     -> List (ElmHtml msg)
     -> List (ElmHtml msg)
 query fn fnAll selector list =
-    case selector of
-        All selectors ->
-            fnAll selectors list
+    case list of
+        [] ->
+            list
 
-        Classes classes ->
-            List.concatMap (fn (ElmHtml.Query.ClassList classes)) list
+        elems ->
+            case selector of
+                All selectors ->
+                    fnAll selectors elems
 
-        Class class ->
-            List.concatMap (fn (ElmHtml.Query.ClassList [ class ])) list
+                Classes classes ->
+                    List.concatMap (fn (ElmHtml.Query.ClassList classes)) elems
 
-        Attribute { name, value } ->
-            List.concatMap (fn (ElmHtml.Query.Attribute name value)) list
+                Class class ->
+                    List.concatMap (fn (ElmHtml.Query.ClassList [ class ])) elems
 
-        BoolAttribute { name, value } ->
-            List.concatMap (fn (ElmHtml.Query.BoolAttribute name value)) list
+                Attribute { name, value } ->
+                    List.concatMap (fn (ElmHtml.Query.Attribute name value)) elems
 
-        Style style ->
-            List.concatMap (fn (ElmHtml.Query.Style style)) list
+                BoolAttribute { name, value } ->
+                    List.concatMap (fn (ElmHtml.Query.BoolAttribute name value)) elems
 
-        Tag name ->
-            List.concatMap (fn (ElmHtml.Query.Tag name)) list
+                Style style ->
+                    List.concatMap (fn (ElmHtml.Query.Style style)) elems
 
-        Text text ->
-            List.concatMap (fn (ElmHtml.Query.ContainsText text)) list
+                Tag name ->
+                    List.concatMap (fn (ElmHtml.Query.Tag name)) elems
 
-        HasChildWith selectors ->
-            List.concatMap
-                (\item ->
-                    case query fn fnAll (All selectors) <| ElmHtml.Query.getChildren item of
-                        [] ->
-                            []
+                Text text ->
+                    List.concatMap (fn (ElmHtml.Query.ContainsText text)) elems
 
-                        _ ->
-                            [ item ]
-                )
-                list
+                Containing selectors ->
+                    let
+                        anyDescendantsMatch elem =
+                            case ElmHtml.Query.getChildren elem of
+                                [] ->
+                                    -- We have no children;
+                                    -- no descendants can possibly match.
+                                    False
 
-        Invalid ->
-            []
+                                children ->
+                                    case query fn fnAll (All selectors) children of
+                                        [] ->
+                                            -- None of our children matched,
+                                            -- but their descendants might!
+                                            List.any anyDescendantsMatch children
+
+                                        _ :: _ ->
+                                            -- At least one child matched. Yay!
+                                            True
+                    in
+                    List.filter anyDescendantsMatch elems
+
+                Invalid ->
+                    []
 
 
 namedAttr : String -> String -> Selector

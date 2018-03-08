@@ -6,9 +6,9 @@ module Test.Html.Selector
         , checked
         , class
         , classes
+        , containing
         , disabled
         , exactClassName
-        , hasChildWith
         , id
         , selected
         , style
@@ -266,7 +266,7 @@ text =
     Internal.Text
 
 
-{-| Matches elements that contain children that match the given selectors.
+{-| Matches elements whose descendants that match the given selectors.
 You will get the element and **not** the child.
 This is useful when you want a sepecific element and continue working with it.
 You can use `Test.Html.Query.contains` if you just want to expect that an element contains some child.
@@ -276,7 +276,7 @@ You can use `Test.Html.Query.contains` if you just want to expect that an elemen
     import Test exposing (test)
     import Test.Html.Event as Event
     import Test.Html.Query as Query
-    import Test.Html.Selector exposing (hasChildWith, tag)
+    import Test.Html.Selector exposing (containing, tag)
 
     test : Test
     test =
@@ -287,15 +287,15 @@ You can use `Test.Html.Query.contains` if you just want to expect that an elemen
                 ]
                 |> Query.find
                     [ tag "button"
-                    , hasChildWith [ text "click me" ]
+                    , containing [ text "click me" ]
                     ]
                 |> Event.simulate Event.click
                 |> Event.expect ClickedMsg
 
 -}
-hasChildWith : List Selector -> Selector
-hasChildWith =
-    Internal.HasChildWith
+containing : List Selector -> Selector
+containing =
+    Internal.Containing
 
 
 {-| Matches elements that have a
