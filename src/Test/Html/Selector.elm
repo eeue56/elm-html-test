@@ -6,6 +6,7 @@ module Test.Html.Selector
         , checked
         , class
         , classes
+        , containing
         , disabled
         , exactClassName
         , id
@@ -263,6 +264,40 @@ attribute with the given value.
 text : String -> Selector
 text =
     Internal.Text
+
+
+{-| Matches elements whose descendants match the given selectors.
+
+(You will get the element and **not** the descendant.)
+
+This is especially useful to find elements which contain specific
+text somewhere in their descendants.
+
+    import Html
+    import Html.Events exposing (onClick)
+    import Test exposing (test)
+    import Test.Html.Event as Event
+    import Test.Html.Query as Query
+    import Test.Html.Selector exposing (containing, tag)
+
+    test : Test
+    test =
+        test "..." <|
+            Html.div []
+                [ Html.button [ onClick NopeMsg ] [ Html.text "not me" ]
+                , Html.button [ onClick ClickedMsg ] [ Html.text "click me" ]
+                ]
+                |> Query.find
+                    [ tag "button"
+                    , containing [ text "click me" ]
+                    ]
+                |> Event.simulate Event.click
+                |> Event.expect ClickedMsg
+
+-}
+containing : List Selector -> Selector
+containing =
+    Internal.Containing
 
 
 {-| Matches elements that have a
