@@ -23,7 +23,7 @@ module Test.Html.Selector
 
 ## General Selectors
 
-@docs tag, text, attribute, all
+@docs tag, text, containing, attribute, all
 
 
 ## Attributes
