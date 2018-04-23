@@ -460,9 +460,11 @@ hasNot selectors (Internal.Single showTrace query) =
                 |> Query.fromHtml
                 |> Query.findAll [ tag "ul" ]
                 |> Query.each
-                    [ Query.has [ tag "ul" ]
-                    , Query.has [ classes [ "items", "active" ] ]
-                    ]
+                    (Expect.all
+                        [ Query.has [ tag "ul" ]
+                        , Query.has [ classes [ "items", "active" ] ]
+                        ]
+                    )
 
 -}
 each : (Single msg -> Expectation) -> Multiple msg -> Expectation
