@@ -76,7 +76,7 @@ all =
 When you only care about one class instead of several, you can use
 [`class`](#class) instead of passing this function a list with one value in it.
 
-To match the element's exact class attribute string, use [`className`](#className).
+To match the element's exact class attribute string, use [`exactClassName`](#exactClassName).
 
     import Html
     import Html.Attributes as Attr
@@ -101,7 +101,7 @@ classes =
 
 To match multiple classes at once, use [`classes`](#classes) instead.
 
-To match the element's exact class attribute string, use [`className`](#className).
+To match the element's exact class attribute string, use [`exactClassName`](#exactClassName).
 
     import Html
     import Html.Attributes as Attr
