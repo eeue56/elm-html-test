@@ -74,33 +74,31 @@ simulate =
     Event
 
 
-{-| Passes if the given message is triggered by the simulated event.
+{-| Expect message triggered by the simulated event to fit given expectation.
 
     import Test.Html.Event as Event
 
     type Msg
         = Change String
 
-
     test "Input produces expected Msg" <|
         \() ->
             Html.input [ onInput Change ] [ ]
                 |> Query.fromHtml
                 |> Event.simulate (Event.input "cats")
-                |> Event.expect (Change "cats")
+                |> Event.expect (Expect.equal <| Change "cats")
 
 -}
-expect : msg -> Event msg -> Expectation
-expect msg (Event event (QueryInternal.Single showTrace query)) =
+expect : (msg -> Expectation) -> Event msg -> Expectation
+expect toExpectation (Event event (QueryInternal.Single showTrace query)) =
     case toResult (Event event (QueryInternal.Single showTrace query)) of
         Err noEvent ->
             Expect.fail noEvent
                 |> QueryInternal.failWithQuery showTrace "" query
 
         Ok foundMsg ->
-            foundMsg
-                |> Expect.equal msg
-                |> QueryInternal.failWithQuery showTrace ("Event.expectEvent: Expected the msg \x1B[32m" ++ toString msg ++ "\x1B[39m from the event \x1B[31m" ++ toString event ++ "\x1B[39m but could not find the event.") query
+            toExpectation foundMsg
+                |> QueryInternal.failWithQuery showTrace ("Event.expect: Expectation for the event \x1B[31m" ++ toString event ++ "\x1B[39m failed.") query
 
 
 {-| Returns a Result with the Msg produced by the event simulated on a node.
@@ -295,7 +293,7 @@ findEvent eventName element =
         eventDecoder node =
             node.facts.events
                 |> Dict.get eventName
-                |> Result.fromMaybe ("Event.expectEvent: The event " ++ eventName ++ " does not exist on the found node.\n\n" ++ elementOutput)
+                |> Result.fromMaybe ("Event.expect: The event " ++ eventName ++ " does not exist on the found node.\n\n" ++ elementOutput)
     in
     case element of
         TextTag _ ->
