@@ -1,5 +1,12 @@
 # elm-html-test
 
+---
+
+**For `Html` tests in elm 19, have a look at https://github.com/elm-explorations/test/.
+This package supports elm 18 only.**
+
+---
+
 Test views by writing expectations about `Html` values. [![Build Status](https://travis-ci.org/eeue56/elm-html-test.svg?branch=master)](https://travis-ci.org/eeue56/elm-html-test)
 
 ```elm
