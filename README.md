@@ -1,5 +1,7 @@
 # elm-html-test
 
+The contents of this package have been moved to [elm-explorations/test](https://github.com/elm-explorations/test) in Elm 0.19.
+
 Test views by writing expectations about `Html` values. [![Build Status](https://travis-ci.org/eeue56/elm-html-test.svg?branch=master)](https://travis-ci.org/eeue56/elm-html-test)
 
 ```elm
